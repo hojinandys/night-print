@@ -24,14 +24,16 @@
     "documentation_url": "https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/VJ146A3/"
   },
   "update": {
-    "state": "updated",
+    "state": "up_to_date",
     "latest_year": 2026,
     "latest_period": "2026-10",
-    "last_checked": "2026-11-23T10:02:40.951926+00:00",
+    "last_checked": "2026-11-23T10:14:16.172610+00:00",
     "new_observation": false,
-    "explanation": "검증된 NASA 월간 합성자료의 전년 동월 비교입니다. 실시간 관측이나 연평균 자료가 아닙니다.",
+    "explanation": "공식 목록을 확인했습니다. 현재 공개된 같은 달의 자료가 작품에 반영되어 있습니다.",
     "common_mask_policy": "두 달에 공통인 관측 영역을 판마다 다시 계산합니다. 다음 달에는 기준 달과 관측 영역이 함께 바뀔 수 있습니다.",
-    "schedule_description": "매주 화요일 12:37 한국시간에 공식 목록을 확인하고, 새로 완료된 월과 전년 같은 달의 자료가 있을 때 검증 후 갱신합니다."
+    "schedule_description": "매주 화요일 12:37 한국시간에 공식 목록을 확인하고, 새로 완료된 월과 전년 같은 달의 자료가 있을 때 검증 후 갱신합니다.",
+    "latest_available_period": "2026-10",
+    "new_observation_available": false
   },
   "reading": {
     "height_absolute": "높이 = 눈이 없는 날의 월간 복사휘도 합성값 · 같은 로그 변환",
