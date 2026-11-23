@@ -2,13 +2,17 @@
 import { createGuide } from './story.mjs';
 import { createImmersiveFocus } from './immersive-focus.mjs';
 import { createObservationCache } from './observation-cache.mjs';
+import { createPlayback } from './playback.mjs';
 (() => {
   const $ = (id) => document.getElementById(id);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const state = { data: null, region: 'seoul', mode: 'absolute', yearIndex: 0, district: null, timer: null, zoom: false, renderToken: 0, guide: null, guideTarget: null, compare: false, compareA: null, compareB: null, quality: false, threshold: '0.5', infoHidden: false, immersive: false, archiveId: null, history: null, historyLoading: false, interaction: null };
+  const state = { data: null, region: 'seoul', mode: 'absolute', yearIndex: 0, district: null, zoom: false, renderToken: 0, guide: null, guideTarget: null, compare: false, compareA: null, compareB: null, quality: false, threshold: '0.5', infoHidden: false, immersive: false, archiveId: null, history: null, historyLoading: false, interaction: null };
   const interactionCache = createObservationCache();
   const immersiveFocus = createImmersiveFocus($('artwork'), $('cinema-toggle'));
-  let loadingKey = '', mapToken = 0, historyToken = 0;
+  let loadingKey = '', loadingPromise = null, mapToken = 0, historyToken = 0, yearRequest = 0;
+  let viewerModulePromise = null, webglUnavailable = false, rendererUnavailable = false;
+  const imageCache = new Map();
+  const viewerModule = () => viewerModulePromise ||= import('./viewer3d.js');
   let viewerPromise = null, viewer = null, viewerKey = '', viewerReady = false, pendingFocus = null;
   const finite = (v) => typeof v === 'number' && Number.isFinite(v);
   const fmt = (v, digits = 1, signed = false) => finite(v) ? `${signed && v > 0 ? '+' : ''}${v.toFixed(digits)}` : '—';
@@ -84,29 +88,79 @@ import { createObservationCache } from './observation-cache.mjs';
     if (text !== undefined) element.textContent = text;
     return element;
   }
+  const playback = createPlayback({
+    prepare: async (index) => {
+      $('timeline-caption').textContent = `${periodName(state.data.years[index])} 준비 중 · 현재 장면을 유지합니다`;
+      await prepareYear(index);
+    },
+    present: async (index) => {
+      const request = yearRequest;
+      state.yearIndex = index;
+      if (await render() === false) throw new Error('Observation could not be displayed');
+      if (request !== yearRequest || !playback.playing) return;
+      $('timeline-caption').textContent = state.mode === 'change' && year() === baseline()
+        ? '기준 관측 · 같은 값을 뺀 차이는 0입니다'
+        : '실제 관측을 한 장면씩 · 같은 시선과 높이 규칙';
+    },
+    delayMs: () => reducedMotion.matches ? 3200 : 2400,
+    onState: syncPlayback,
+    onError: () => { $('timeline-caption').textContent = '다음 관측을 불러오지 못해 멈췄습니다. 현재 장면은 유지합니다. 다시 재생해 주세요.'; },
+  });
+  function syncPlayback(playing) {
+      $('play-years').setAttribute('aria-label', playing ? '관측 재생 멈추기' : monthly() ? '같은 달 관측 재생' : '관측 연도 재생');
+      $('play-years').setAttribute('aria-pressed', String(playing));
+      $('play-years').innerHTML = playing
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zm7 0h4v14h-4z" fill="currentColor"/></svg><span>멈추기</span>'
+        : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5 19 12 8 18.5Z" fill="currentColor"/></svg><span>${monthly() ? '관측 재생' : '연도 재생'}</span>`;
+      if (!playing) $('timeline-caption').textContent = '같은 관측 영역 · 같은 높이 규칙';
+  }
   function stopPlay() {
-    if (state.timer) window.clearInterval(state.timer);
-    state.timer = null;
-    $('play-years').setAttribute('aria-label', monthly() ? '같은 달 관측 재생' : '관측 연도 재생');
-    $('play-years').innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5 19 12 8 18.5Z" fill="currentColor"/></svg><span>${monthly() ? '관측 재생' : '연도 재생'}</span>`;
-    $('timeline-caption').textContent = '같은 관측 영역 · 같은 높이 규칙';
+    ++yearRequest;
+    playback.stop();
+    syncPlayback(false);
   }
   function playYears() {
-    if (!state.data) return;
+    if (!state.data || state.compare) return;
     leaveGuide();
-    if (state.timer) { stopPlay(); return; }
-    if (state.yearIndex === state.data.years.length - 1) state.yearIndex = 0;
-    render();
-    $('play-years').setAttribute('aria-label', '관측 재생 멈추기');
-    $('play-years').innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zm7 0h4v14h-4z" fill="currentColor"/></svg><span>멈추기</span>';
-    $('timeline-caption').textContent = monthly() ? '공개된 같은 달의 관측을 순서대로 재생합니다' : '공개된 연간 관측을 순서대로 재생합니다';
-    state.timer = window.setInterval(() => {
-      if (state.yearIndex >= state.data.years.length - 1) { stopPlay(); $('timeline-caption').textContent = '같은 관측 영역 · 같은 높이 규칙'; return; }
-      state.yearIndex++; render();
-    }, reducedMotion.matches ? 2600 : 1800);
+    if (playback.playing) { stopPlay(); return; }
+    ++yearRequest;
+    const first = state.yearIndex === state.data.years.length - 1 ? 0 : state.yearIndex;
+    playback.start(state.data.years.map((_, index) => index).slice(first));
   }
-  function setYear(index) {
-    leaveGuide(); stopPlay(); state.yearIndex = Math.max(0, Math.min(state.data.years.length - 1, Number(index))); render();
+  async function setYear(index) {
+    leaveGuide(); stopPlay();
+    const request = ++yearRequest;
+    index = Math.max(0, Math.min(state.data.years.length - 1, Number(index)));
+    $('timeline-caption').textContent = `${periodName(state.data.years[index])} 준비 중 · 현재 장면을 유지합니다`;
+    // Keep the slider, year, statistics and actual surface on one observation.
+    $('year-slider').value = String(state.yearIndex);
+    try {
+      await prepareYear(index);
+      if (request !== yearRequest) return;
+      state.yearIndex = index; await render();
+      if (request === yearRequest) $('timeline-caption').textContent = '같은 관측 영역 · 같은 높이 규칙';
+    } catch (error) {
+      if (request === yearRequest) $('timeline-caption').textContent = '관측을 불러오지 못했습니다. 현재 장면을 유지합니다. 연도를 다시 선택해 주세요.';
+    }
+  }
+  function prepareImage(url) {
+    if (imageCache.has(url)) return imageCache.get(url);
+    const image = new Image(); image.src = url;
+    const pending = image.decode(); imageCache.set(url, pending);
+    while (imageCache.size > 20) imageCache.delete(imageCache.keys().next().value);
+    pending.catch(() => { if (imageCache.get(url) === pending) imageCache.delete(url); });
+    return pending;
+  }
+  async function prepareYear(index) {
+    const selectedYear = state.data.years[index], mode = state.mode;
+    const regions = state.region === 'all' ? state.data.regions : [region()];
+    if (state.region !== 'all' && regions[0].webgl && !webglUnavailable) {
+      const module = await viewerModule();
+      if (rendererUnavailable) await prepareImage(imagePath(regions[0], selectedYear, mode));
+      else await module.preloadFrame(regions[0], selectedYear, mode);
+    } else {
+      await Promise.all(regions.map((r) => prepareImage(imagePath(r, selectedYear, mode))));
+    }
   }
   function setRegion(id) {
     if (!state.data || (id !== 'all' && !state.data.regions.some((r) => r.id === id))) return;
@@ -116,8 +170,8 @@ import { createObservationCache } from './observation-cache.mjs';
   }
   function setMode(mode, fromStory = false) {
     if (!state.data) return;
-    leaveGuide(); state.compare = false; state.mode = mode;
-    if (fromStory) { stopPlay(); state.yearIndex = state.data.years.length - 1; }
+    leaveGuide(); stopPlay(); state.compare = false; state.mode = mode;
+    if (fromStory) { state.yearIndex = state.data.years.length - 1; }
     render();
     if (fromStory) $('artwork').scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
     announce(mode === 'change' ? `${periodName(baseline())}의 빛을 뺀 변화입니다. 금빛은 증가, 푸른빛은 감소입니다.` : `${observation()}의 밝기 장면입니다.`);
@@ -131,26 +185,32 @@ import { createObservationCache } from './observation-cache.mjs';
     if (d) { const values = pairValues(d); announce(`${d.name}의 경계와 정보를 선택했습니다. ${periodName(pair()[0])}부터 ${periodName(pair()[1])}까지 평균 ${pct(values.percent, true)}.`); }
   }
   function fallback3D(message) {
-    viewerReady = false; viewer?.setActive(false); $('webgl-view').hidden = true; $('single-scene').hidden = state.compare; $('pair-fallback').hidden = !state.compare; $('webgl-status').hidden = true;
+    webglUnavailable = true; viewerReady = false; viewer?.setActive(false); $('webgl-view').hidden = true; $('single-scene').hidden = state.compare; $('pair-fallback').hidden = !state.compare; $('webgl-status').hidden = true;
     $('view-compass').hidden = true;
     $('orbit-instruction').textContent = message; $('reset-view').textContent = '선택 해제'; $('reset-view').hidden = !state.district;
   }
-  async function update3D(r) {
+  function update3D(r) {
     const selectedYear = state.compare ? state.compareA : year(), compareYear = state.compare ? state.compareB : undefined, selectedMode = state.compare ? 'absolute' : state.mode;
     const key = `${state.data.release_id || state.data.updated_utc}/${r.id}/${selectedMode}/${selectedYear}/${compareYear}/${r.webgl?.grid_url || r.interaction_url}`;
-    if (viewerReady && key === viewerKey) { viewer.setActive(true); viewer.select(state.district); viewer.setQualityVisible?.(state.quality); return; }
-    if (loadingKey === key) return;
+    if (viewerReady && key === viewerKey && !loadingKey) { viewer.setActive(true); viewer.select(state.district); viewer.setQualityVisible?.(state.quality); return Promise.resolve(true); }
+    if (loadingKey === key) return loadingPromise;
     loadingKey = key;
     const token = ++state.renderToken;
-    viewerReady = false; viewer?.setActive(false); $('webgl-view').hidden = true; $('single-scene').hidden = state.compare; $('pair-fallback').hidden = !state.compare; $('view-compass').hidden = true;
-    $('webgl-status').hidden = false; $('webgl-status').textContent = state.compare ? '두 관측의 입체를 불러오는 중' : '회전 가능한 입체를 불러오는 중';
-    $('orbit-instruction').textContent = '3D 지형을 준비하고 있습니다. 현재 보이는 장면은 정지 이미지입니다.';
-    if (!r.webgl) { loadingKey = ''; fallback3D('이 관측의 3D 자료가 없어 실제 관측의 정지 이미지를 표시합니다. 구역별 정보는 그대로 확인할 수 있습니다.'); return; }
+    const retainSurface = viewerReady && viewer.regionId === r.id && viewer.mode === selectedMode &&
+      viewer.comparing === state.compare && viewer.spec?.static_url === r.webgl?.static_url;
+    if (!retainSurface) {
+      viewerReady = false; viewer?.setActive(false); $('webgl-view').hidden = true; $('single-scene').hidden = state.compare; $('pair-fallback').hidden = !state.compare; $('view-compass').hidden = true;
+      $('orbit-instruction').textContent = '3D 지형을 준비하고 있습니다. 현재 보이는 장면은 정지 이미지입니다.';
+    }
+    $('webgl-status').hidden = retainSurface;
+    $('webgl-status').textContent = state.compare ? '두 관측의 입체를 불러오는 중' : '회전 가능한 입체를 불러오는 중';
+    if (!r.webgl || rendererUnavailable) { loadingKey = ''; fallback3D('실제 관측의 정지 이미지로 감상합니다. 구역별 정보와 연도 재생은 그대로 사용할 수 있습니다.'); return Promise.resolve(true); }
+    loadingPromise = (async () => {
     try {
-      if (!viewerPromise) viewerPromise = import('./viewer3d.js').then(({ ReliefViewer }) => {
+      if (!viewerPromise) viewerPromise = viewerModule().then(({ ReliefViewer }) => {
         viewer = new ReliefViewer($('webgl-view'), {
           onSelect: selectDistrict,
-          onError: () => fallback3D('3D 표시가 중단되어 실제 관측의 정지 이미지로 전환했습니다. 새로고침하면 다시 시도합니다.'),
+          onError: () => { rendererUnavailable = true; fallback3D('3D 표시가 중단되어 실제 관측의 정지 이미지로 전환했습니다. 새로고침하면 다시 시도합니다.'); },
           onMove: () => { $('reset-view').hidden = false; },
           onView: ({ northAngle = 0, comparing, comparisonAxis = 'horizontal' }) => {
             $('compass-arrow').style.transform = `rotate(${northAngle}deg)`;
@@ -158,22 +218,26 @@ import { createObservationCache } from './observation-cache.mjs';
             $('pair-labels').dataset.comparisonAxis = comparisonAxis;
           }
         }); return viewer;
-      });
-      const [instance, interaction] = await Promise.all([viewerPromise, loadInteraction(r)]);
+      }).catch((error) => { rendererUnavailable = true; throw error; });
+      const instance = await viewerPromise;
       if (token !== state.renderToken || state.region === 'all') return;
-      const loaded = await instance.show(r, selectedYear, selectedMode, { compareYear, interaction });
+      const loaded = await instance.show(r, selectedYear, selectedMode, { compareYear, interaction: state.interaction });
       if (!loaded || token !== state.renderToken || state.region === 'all') return;
       // A map retry may have recovered while the surface was still loading.
       if (state.interaction && instance.interaction !== state.interaction) instance.setInteraction(state.interaction);
-      viewerKey = key; viewerReady = true; $('single-scene').hidden = true; $('pair-fallback').hidden = true; $('single-image-error').hidden = true; $('webgl-view').hidden = false; $('webgl-status').hidden = true; $('view-compass').hidden = false;
+      viewerKey = key; viewerReady = true; webglUnavailable = false; $('single-scene').hidden = true; $('pair-fallback').hidden = true; $('single-image-error').hidden = true; $('webgl-view').hidden = false; $('webgl-status').hidden = true; $('view-compass').hidden = false;
       instance.setActive(true); instance.setMarkersVisible($('show-markers').checked); instance.select(state.district); instance.setQualityVisible?.(state.quality);
       if (pendingFocus && pendingFocus === state.district) instance.focus(pendingFocus);
       pendingFocus = null; $('reset-view').hidden = false; $('reset-view').textContent = '원래 시점';
       $('orbit-instruction').textContent = state.compare ? '어느 쪽을 드래그해도 같은 각도로 회전합니다. 휠로 확대 · 방향키로 회전 · R 원래 시점' : '드래그해 회전 · 휠 또는 두 손가락으로 확대 · 방향키로 회전 · + / − 확대 · R 원래 시점';
+      return true;
     } catch (error) {
       if (token !== state.renderToken) return;
       console.warn('3D unavailable:', error); fallback3D('이 기기에서 3D를 불러오지 못해 실제 관측의 정지 이미지를 표시합니다. 구역별 정보는 그대로 확인할 수 있습니다.');
-    } finally { if (loadingKey === key) loadingKey = ''; }
+      return false;
+    } finally { if (token === state.renderToken) { loadingKey = ''; loadingPromise = null; } }
+    })();
+    return loadingPromise;
   }
   function renderHeading() {
     const changed = state.mode === 'change';
@@ -282,7 +346,7 @@ import { createObservationCache } from './observation-cache.mjs';
     $('place-growth').textContent = pct(compared.percent, true);
     $('place-decrease').textContent = pct(record?.lower_area_pct ?? (state.compare ? null : values.decreased_area_pct)); $('place-coverage').textContent = pct(entity.coverage_pct);
     $('place-note').textContent = `${periodName(b)} 값이 ${periodName(a)}보다 낮은 면적의 비율입니다. 분모는 공통 관측 영역이며 작은 음수도 포함합니다.${state.compare && !record ? ' 이 두 시점의 면적 통계를 불러오는 중입니다.' : ''}${Number(entity.coverage_pct) < 85 ? ' 관측 범위가 제한되어 전체 지역으로 확대 해석하지 않습니다.' : ''}`;
-    drawChart(entity); renderQuality(entity); updateMapSelection(); update3D(r);
+    drawChart(entity); renderQuality(entity); updateMapSelection(); const ready = update3D(r);
     if (!state.interaction) {
       $('map-status').textContent = '지도와 관측 범위를 불러오고 있습니다.';
       $('retry-map').disabled = true;
@@ -296,6 +360,7 @@ import { createObservationCache } from './observation-cache.mjs';
       $('place-decrease').textContent = pct(record?.lower_area_pct ?? (state.compare ? null : series(entity).decreased_area_pct));
       if (state.compare) $('place-note').textContent = `${periodName(pair()[1])} 값이 ${periodName(pair()[0])}보다 낮은 면적의 비율입니다. 분모는 공통 관측 영역이며 작은 음수도 포함합니다.${!record ? ' 이 관측 조합의 면적 통계를 제공하지 못해 —로 표시합니다.' : ''}${Number(entity.coverage_pct) < 85 ? ' 관측 범위가 제한되어 전체 지역으로 확대 해석하지 않습니다.' : ''}`;
     });
+    return ready;
   }
   function svgNode(tag, attributes = {}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -349,10 +414,12 @@ import { createObservationCache } from './observation-cache.mjs';
   function render() {
     if (!state.data) return;
     renderHeading(); const all = state.region === 'all'; $('comparison').hidden = !all; $('region-detail').hidden = all;
-    if (all) { ++state.renderToken; ++mapToken; loadingKey = ''; viewer?.setActive(false); renderComparison(); } else renderDetail();
+    let ready;
+    if (all) { ++state.renderToken; ++mapToken; loadingKey = ''; viewer?.setActive(false); renderComparison(); } else ready = renderDetail();
     renderGuide();
     fitImmersiveCanvas();
     preloadNext();
+    return ready;
   }
   function findGuideTarget() {
     return createGuide(state.data, state.region);
@@ -476,9 +543,8 @@ import { createObservationCache } from './observation-cache.mjs';
     } finally { if (token === historyToken) state.historyLoading = false; }
   }
   function preloadNext() {
-    if (state.yearIndex >= state.data.years.length - 1) return;
-    const next = state.data.years[state.yearIndex + 1];
-    (state.region === 'all' ? state.data.regions : [region()]).forEach((r) => { const p = r.render?.[state.mode]?.find((f) => Number(f.year) === Number(next))?.url; if (p) { const img = new Image(); img.src = editionAsset(p); } });
+    if (!state.data || state.compare || state.yearIndex >= state.data.years.length - 1) return;
+    prepareYear(state.yearIndex + 1).catch(() => {});
   }
   function configureEdition() {
     const data = state.data, source = data.source || {}, isMonthly = monthly();

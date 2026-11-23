@@ -19,7 +19,11 @@ async function interactionData(url) {
   return interactionCache.get(url);
 }
 async function packet(url) {
-  if (packetCache.has(url)) return packetCache.get(url);
+  if (packetCache.has(url)) {
+    const cached = packetCache.get(url);
+    packetCache.delete(url); packetCache.set(url, cached);
+    return cached;
+  }
   const pending = (async () => {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Geometry ${response.status}`);
@@ -42,8 +46,16 @@ async function packet(url) {
   })();
   packetCache.set(url, pending);
   while (packetCache.size > 10) packetCache.delete(packetCache.keys().next().value);
-  pending.catch(() => packetCache.delete(url));
+  pending.catch(() => { if (packetCache.get(url) === pending) packetCache.delete(url); });
   return pending;
+}
+// Prepare the actual next observation without touching the visible surface,
+// camera or selection. show() consumes these same decoded packets.
+export async function preloadFrame(region, year, mode) {
+  const spec = region.webgl;
+  const url = spec?.frames?.[mode]?.find((frame) => Number(frame.year) === Number(year))?.url;
+  if (!spec?.static_url || !url) throw new Error('3D frame unavailable');
+  await Promise.all([packet(spec.static_url), packet(url)]);
 }
 function disposeGroup(group) {
   group.traverse((object) => { object.geometry?.dispose(); if (Array.isArray(object.material)) object.material.forEach((m) => m.dispose()); else object.material?.dispose(); });
@@ -278,7 +290,7 @@ export class ReliefViewer {
     this.setInteraction(location);
     this.canvas.setAttribute('aria-label', comparing
       ? `${year}년과 ${compareYear}년 실제 야간광 입체 비교. 두 시점이 함께 회전합니다. 방향키 회전, 더하기와 빼기 확대, R 원래 시점.`
-      : '회전 가능한 실제 야간광 입체. 방향키 회전, 더하기와 빼기 확대, R 원래 시점.');
+      : `${year}년 실제 야간광 입체. 방향키 회전, 더하기와 빼기 확대, R 원래 시점.`);
     this.makeMarkers(region); this.resize(); if (regionChanged) this.reset(false); this.dirty = true; return true;
   }
   buildSurface(group, base, frame) {

@@ -78,7 +78,7 @@ def update_lock(path):
         yield
     finally:path.unlink(missing_ok=True)
 
-VIEWER_FILES=('viewer3d.js','story.mjs','immersive-focus.mjs','observation-cache.mjs','vendor/three.module.js','vendor/three.core.js',
+VIEWER_FILES=('viewer3d.js','story.mjs','immersive-focus.mjs','observation-cache.mjs','playback.mjs','vendor/three.module.js','vendor/three.core.js',
               'vendor/OrbitControls.js','vendor/RoomEnvironment.js',
               'vendor/LineSegments2.js','vendor/LineSegmentsGeometry.js','vendor/LineMaterial.js',
               'vendor/THREE-LICENSE.txt')

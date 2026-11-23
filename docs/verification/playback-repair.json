@@ -1,0 +1,48 @@
+{
+  "review_date_local": "2026-11-24",
+  "time_zone": "Asia/Seoul",
+  "problem": "Year playback hid the rotated WebGL artwork for a differently lit Blender still on every observation; a fixed timer advanced before slow observations were ready.",
+  "changes": [
+    "Retain same-region, same-mode WebGL surface and camera during year changes.",
+    "Prepare and decode next actual geometry before committing displayed year/statistics.",
+    "Wait until presentation completes, then dwell 2400ms (3200ms reduced-motion preference).",
+    "Cancel deferred preparation on Stop, region/mode/edition changes, or replacement year selection.",
+    "Share in-flight render completion; stale requests cannot clear newer requests or replace current observation.",
+    "Map fetching does not block a prepared surface; map boundaries attach when ready.",
+    "Use decoded original still images for playback when WebGL construction is unavailable.",
+    "Show explicit zero-difference reference caption in change-mode baseline."
+  ],
+  "tests": {
+    "node": {
+      "passed": 33,
+      "failed": 0
+    },
+    "python": {
+      "passed": 67,
+      "failed": 0
+    },
+    "annual_validation": "valid",
+    "monthly_validation": "valid"
+  },
+  "ui_checks": {
+    "delayed_observation": "Real 2016 Seoul packet held by private local server. Displayed year and canvas aria-label both remained2015; rotated WebGL stayed visible while pending.",
+    "stop_while_loading": "Stop retained2015 even after delayed2016 response released.",
+    "next_observation_failure": "Intentional2017HTTP503 stopped on2016 with its same3D, selected Jongno and clear retry instruction.",
+    "jeju_change_playback": "Played from2015 zero difference to2023 actual geometry; final year, canvas and stopped controls matched.",
+    "webgl_unavailable": "Private constructor-failure fixture successfully played decoded original images from2021 through2023.",
+    "monthly": "2025.10 through2026.10, correct monthly play label, final3D/label match and stopped control.",
+    "normal_console_errors": []
+  },
+  "scientific_scope": "No observation values, geometry packets, light materials or artistic height rules changed. No invented intermediate observations.",
+  "independent_review": "No remaining material integration issue identified after race fixes.",
+  "shared_files_sha256": {
+    "index.html": "89ecac562835b5ca0f1932cdd076a6eee1bebbac8297241f2d988b048572473f",
+    "app.js": "5dd17d381a24eb1a07bb7d95259806a6a2ff4d9d26c04e8d04378924fd71df5d",
+    "style.css": "83fd858254f15430f6f7693cdcd79ed7a712c71b085a3938695e46a54aad25ca",
+    "viewer3d.js": "915ade3b6e435d0c00adc4a6193b6673ab7773a2a4ff9e9a3f1438fe4a6280dd",
+    "story.mjs": "c5516a49088aa1f92f5e0d077cbcbebc62b89a9ae0c34346f035128afc8288bd",
+    "immersive-focus.mjs": "c0cf0962816532274cbabd37a2a7be9dba1199d67ab4b5d322cbfdf392beb338",
+    "observation-cache.mjs": "5cf1b07ff7bd4949306ad2916a764d5575227f6ca746e224d13ecfa964911693",
+    "playback.mjs": "4a8e12490d46953a0cbb012c537906e8bcaad87252867a9b9bffd5dabea5d9d0"
+  }
+}
