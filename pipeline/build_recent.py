@@ -201,6 +201,11 @@ def validate_recent(dist, expected_pair=None):
                         raise ValueError('Monthly artwork must preserve the 1920 x 1080 camera.')
                     image.verify()
     validate_interactive_art(dist,m)
+    if m.get('experience'):
+        from export_experience import validate as validate_experience
+        validate_experience(dist)
+    from edition_history import validate as validate_history
+    validate_history(dist)
     return m
 
 
@@ -295,8 +300,13 @@ def build(plan, nasa_root, blender, source_project=None, cpu=False, samples=24, 
                        'independent_values': 'All region and district monthly means verified against saved facts.'})
     write_json(dist / 'data/export_provenance.json', provenance)
     run([sys.executable,stage/'pipeline/export_web3d.py','--project',stage,'--out',dist,'--blender',blender],stage)
+    from export_experience import build as build_experience
+    build_experience(stage,dist)
     validate_interactive_art(dist,read_json(dist/'data/manifest.json'),required=True)
-    result = promote_recent(dist, Path(destination).resolve() if destination else ROOT / 'dist/recent', ROOT / '.runtime/releases', plan['monthly_pair'])
+    target = Path(destination).resolve() if destination else ROOT / 'dist/recent'
+    from edition_history import prepare as prepare_history
+    prepare_history(dist,target)
+    result = promote_recent(dist, target, ROOT / '.runtime/releases', plan['monthly_pair'])
     return {'status': 'updated', 'heavy_build_performed': True, 'stage': str(stage), 'latest_period': plan['latest_period'], **result}
 
 

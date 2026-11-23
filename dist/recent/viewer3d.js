@@ -8,6 +8,16 @@ import { LineMaterial } from './vendor/LineMaterial.js';
 // Three.js 0.187.0, distributed locally under the included MIT license.
 // Geometry packets preserve the original Blender display geometry; values are never inferred from images.
 const packetCache = new Map();
+const interactionCache = new Map();
+async function interactionData(url) {
+  if (!url) return null;
+  if (!interactionCache.has(url)) {
+    const request = fetch(url).then((response) => { if (!response.ok) throw new Error('Location geometry unavailable'); return response.json(); });
+    interactionCache.set(url, request);
+    request.catch(() => interactionCache.delete(url));
+  }
+  return interactionCache.get(url);
+}
 async function packet(url) {
   if (packetCache.has(url)) return packetCache.get(url);
   const pending = (async () => {
@@ -69,10 +79,76 @@ function charcoalGround() {
   return texture;
 }
 
+function polygonGeometry(polygons) {
+  const shapes = [];
+  for (const polygon of polygons || []) {
+    if (!polygon.outer || polygon.outer.length < 3) continue;
+    const shape = new THREE.Shape(polygon.outer.map(([x, y]) => new THREE.Vector2(x, y)));
+    for (const hole of polygon.holes || []) if (hole.length >= 3) shape.holes.push(new THREE.Path(hole.map(([x, y]) => new THREE.Vector2(x, y))));
+    shapes.push(shape);
+  }
+  return shapes.length ? new THREE.ShapeGeometry(shapes) : null;
+}
+
+function missingTexture() {
+  const canvas = document.createElement('canvas'); canvas.width = canvas.height = 64;
+  const context = canvas.getContext('2d'); context.clearRect(0, 0, 64, 64);
+  context.strokeStyle = '#b1bbc4'; context.lineWidth = 3;
+  for (let offset = -64; offset <= 64; offset += 16) {
+    context.beginPath(); context.moveTo(offset, 0); context.lineTo(offset + 64, 64); context.stroke();
+  }
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(1.8, 1.8);
+  return texture;
+}
+
+// Sample only inside actual source triangles. Missing regions never acquire a
+// nearest-neighbour height or a fabricated zero-valued relief.
+function surfaceSampler(base, frame) {
+  const xs = [], ys = [];
+  for (let i = 0; i < base.xy.length; i += 2) { xs.push(base.xy[i]); ys.push(base.xy[i + 1]); }
+  const uniqueX = [...new Set(xs)].sort((a, b) => a - b), uniqueY = [...new Set(ys)].sort((a, b) => a - b);
+  const spacing = (values) => values.slice(1).reduce((step, value, i) => Math.min(step, value - values[i]), Infinity);
+  const dx = spacing(uniqueX), dy = spacing(uniqueY), minX = uniqueX[0], minY = uniqueY[0];
+  const stride = Math.round((uniqueX.at(-1) - minX) / dx) + 2, cells = new Map();
+  const ix = xs.map((x) => Math.round((x - minX) / dx)), iy = ys.map((y) => Math.round((y - minY) / dy));
+  const triangles = frame.triangles || (() => {
+    const indices = [];
+    for (let i = 0; i < base.faces.length; i += 4) indices.push(base.faces[i], base.faces[i + 1], base.faces[i + 2], base.faces[i], base.faces[i + 2], base.faces[i + 3]);
+    return indices;
+  })();
+  for (let i = 0; i < triangles.length; i += 3) {
+    const a = triangles[i], b = triangles[i + 1], c = triangles[i + 2];
+    const key = Math.min(ix[a], ix[b], ix[c]) + Math.min(iy[a], iy[b], iy[c]) * stride;
+    if (!cells.has(key)) cells.set(key, []);
+    cells.get(key).push(a, b, c);
+  }
+  return {
+    step: Math.min(dx, dy),
+    height(x, y) {
+      const column = Math.floor((x - minX) / dx + 1e-8), row = Math.floor((y - minY) / dy + 1e-8);
+      for (const [ox, oy] of [[0, 0], [-1, 0], [0, -1], [-1, -1]]) {
+        const indices = cells.get(column + ox + (row + oy) * stride); if (!indices) continue;
+        for (let i = 0; i < indices.length; i += 3) {
+          const a = indices[i], b = indices[i + 1], c = indices[i + 2];
+          const determinant = (ys[b] - ys[c]) * (xs[a] - xs[c]) + (xs[c] - xs[b]) * (ys[a] - ys[c]);
+          if (Math.abs(determinant) < 1e-14) continue;
+          const u = ((ys[b] - ys[c]) * (x - xs[c]) + (xs[c] - xs[b]) * (y - ys[c])) / determinant;
+          const v = ((ys[c] - ys[a]) * (x - xs[c]) + (xs[a] - xs[c]) * (y - ys[c])) / determinant;
+          const w = 1 - u - v;
+          if (u >= -1e-6 && v >= -1e-6 && w >= -1e-6) return u * frame.z[a] + v * frame.z[b] + w * frame.z[c];
+        }
+      }
+      return null;
+    },
+  };
+}
+
 export class ReliefViewer {
-  constructor(host, { onSelect, onError, onMove } = {}) {
-    this.host = host; this.onSelect = onSelect; this.onError = onError; this.onMove = onMove;
+  constructor(host, { onSelect, onError, onMove, onView } = {}) {
+    this.host = host; this.onSelect = onSelect; this.onError = onError; this.onMove = onMove; this.onView = onView;
     this.active = true; this.dirty = true; this.contextLost = false; this.generation = 0; this.markersVisible = true; this.markerNodes = [];
+    this.comparing = false; this.qualityVisible = false; this.interaction = null;
     this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -108,7 +184,10 @@ export class ReliefViewer {
     light(0x97bbef, 2.7, [2, 7, 8]);
     light(0xffd9a6, 2.5, [6, 1, 5]);
     light(0xe8edf5, .9, [-1, -8, 6]);
-    this.fixed = new THREE.Group(); this.dynamic = new THREE.Group(); this.scene.add(this.fixed, this.dynamic);
+    this.fixed = new THREE.Group(); this.dynamic = new THREE.Group(); this.secondary = new THREE.Group();
+    this.quality = new THREE.Group(); this.selection = new THREE.Group(); this.secondarySelection = new THREE.Group();
+    this.scene.add(this.fixed, this.dynamic, this.secondary, this.quality, this.selection, this.secondarySelection);
+    this.secondary.visible = this.secondarySelection.visible = false; this.quality.visible = false;
     this.floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshBasicMaterial({ map: charcoalGround(), toneMapped: false, dithering: true }));
     this.floorShadow = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ color: 0x000000, opacity: .42, depthWrite: false }));
     this.floorShadow.receiveShadow = true; this.scene.add(this.floor, this.floorShadow);
@@ -125,32 +204,85 @@ export class ReliefViewer {
         this.dirty = true; if (t === 1) this.transition = null;
       }
       this.controls.update();
-      if (this.dirty) { this.renderer.render(this.scene, this.camera); this.projectMarkers(); this.dirty = false; }
+      if (this.dirty) { this.renderViews(); this.projectMarkers(); this.reportView(); this.dirty = false; }
     });
   }
   resize() {
     const width = this.host.clientWidth, height = this.host.clientHeight; if (!width || !height) return;
     this.renderer.setSize(width, height, false);
-    const cameraWidth = this.spec?.camera?.ortho_width || 18.5, halfHeight = cameraWidth * height / width / 2;
+    this.comparisonAxis = width < 640 ? 'vertical' : 'horizontal';
+    const paneWidth = this.comparing && this.comparisonAxis === 'horizontal' ? width / 2 : width;
+    const paneHeight = this.comparing && this.comparisonAxis === 'vertical' ? height / 2 : height;
+    const cameraWidth = this.spec?.camera?.ortho_width || 18.5, halfHeight = cameraWidth * paneHeight / paneWidth / 2;
     const shift = this.spec?.camera?.shift_y || 0;
     this.camera.left = -cameraWidth / 2; this.camera.right = cameraWidth / 2;
     this.camera.top = halfHeight + cameraWidth * shift; this.camera.bottom = -halfHeight + cameraWidth * shift;
     this.camera.updateProjectionMatrix(); this.dirty = true;
   }
-  async show(region, year, mode) {
+  panes() {
+    if (!this.comparing) return [{ left: 0, top: 0, width: 1, height: 1 }];
+    return this.comparisonAxis === 'vertical'
+      ? [{ left: 0, top: 0, width: 1, height: .5 }, { left: 0, top: .5, width: 1, height: .5 }]
+      : [{ left: 0, top: 0, width: .5, height: 1 }, { left: .5, top: 0, width: .5, height: 1 }];
+  }
+  renderViews() {
+    const width = this.host.clientWidth, height = this.host.clientHeight;
+    this.renderer.setScissorTest(this.comparing);
+    for (const [index, pane] of this.panes().entries()) {
+      const x = pane.left * width, y = (1 - pane.top - pane.height) * height;
+      this.renderer.setViewport(x, y, pane.width * width, pane.height * height);
+      this.renderer.setScissor(x, y, pane.width * width, pane.height * height);
+      this.dynamic.visible = this.selection.visible = index === 0;
+      this.secondary.visible = this.secondarySelection.visible = index === 1;
+      // Both observations use this exact camera, lighting, and original height
+      // scale. Scissoring needs only one WebGL context and one set of controls.
+      this.renderer.render(this.scene, this.camera);
+    }
+    this.renderer.setScissorTest(false); this.renderer.setViewport(0, 0, width, height);
+    this.dynamic.visible = this.selection.visible = true;
+    this.secondary.visible = this.secondarySelection.visible = false;
+  }
+  reportView() {
+    const center = this.controls.target.clone().project(this.camera);
+    const north = this.controls.target.clone().add(new THREE.Vector3(0, 1, 0)).project(this.camera);
+    const pane = this.panes()[0];
+    const dx = (north.x - center.x) * this.host.clientWidth * pane.width;
+    const dy = (north.y - center.y) * this.host.clientHeight * pane.height;
+    this.onView?.({ northAngle: Math.atan2(dx, dy) * 180 / Math.PI, comparing: this.comparing, comparisonAxis: this.comparisonAxis, qualityAvailable: !!this.interaction?.missing });
+  }
+  async show(region, year, mode, { compareYear, interaction } = {}) {
     if (this.contextLost) throw new Error('Reload required after WebGL context loss');
     const generation = ++this.generation, spec = region.webgl;
     if (!spec) throw new Error('3D geometry not available');
+    const comparing = compareYear !== undefined && compareYear !== null;
+    if (comparing) mode = 'absolute';
     const frameURL = spec.frames?.[mode]?.find((f) => Number(f.year) === Number(year))?.url;
     if (!frameURL) throw new Error('3D frame unavailable');
-    const [base, frame] = await Promise.all([packet(spec.static_url), packet(frameURL)]);
+    const secondURL = comparing && spec.frames?.absolute?.find((f) => Number(f.year) === Number(compareYear))?.url;
+    if (comparing && !secondURL) throw new Error('Comparison observation unavailable');
+    const [base, frame, secondFrame, location] = await Promise.all([
+      packet(spec.static_url), packet(frameURL), comparing ? packet(secondURL) : null,
+      interaction === undefined ? interactionData(region.interaction_url).catch(() => null) : interaction,
+    ]);
     if (this.contextLost) throw new Error('Reload required after WebGL context loss');
     if (generation !== this.generation) return false;
     if (!base.xy || !frame.z || frame.z.length * 2 !== base.xy.length) throw new Error('Geometry dimensions do not match');
-    const regionChanged = this.regionId !== region.id, modeChanged = this.mode !== mode;
-    this.spec = spec; this.base = base; this.frame = frame; this.regionId = region.id; this.mode = mode;
-    if (regionChanged || modeChanged) this.buildFixed(base, mode);
-    disposeGroup(this.dynamic);
+    if (secondFrame && secondFrame.z.length * 2 !== base.xy.length) throw new Error('Comparison geometry dimensions do not match');
+    const regionChanged = this.regionId !== region.id, modeChanged = this.mode !== mode, baseChanged = this.base !== base || this.spec?.static_url !== spec.static_url;
+    this.spec = spec; this.base = base; this.frame = frame; this.secondFrame = secondFrame;
+    this.region = region; this.regionId = region.id; this.mode = mode; this.comparing = comparing; this.year = year; this.compareYear = compareYear;
+    this.sampler = surfaceSampler(base, frame); this.secondSampler = secondFrame ? surfaceSampler(base, secondFrame) : null;
+    if (regionChanged || modeChanged || baseChanged) this.buildFixed(base, mode);
+    this.buildSurface(this.dynamic, base, frame);
+    disposeGroup(this.secondary); if (secondFrame) this.buildSurface(this.secondary, base, secondFrame);
+    this.setInteraction(location);
+    this.canvas.setAttribute('aria-label', comparing
+      ? `${year}년과 ${compareYear}년 실제 야간광 입체 비교. 두 시점이 함께 회전합니다. 방향키 회전, 더하기와 빼기 확대, R 원래 시점.`
+      : '회전 가능한 실제 야간광 입체. 방향키 회전, 더하기와 빼기 확대, R 원래 시점.');
+    this.makeMarkers(region); this.resize(); if (regionChanged) this.reset(false); this.dirty = true; return true;
+  }
+  buildSurface(group, base, frame) {
+    disposeGroup(group);
     const positions = new Float32Array(frame.z.length * 3);
     for (let i = 0; i < frame.z.length; i++) { positions[i * 3] = base.xy[i * 2]; positions[i * 3 + 1] = base.xy[i * 2 + 1]; positions[i * 3 + 2] = frame.z[i]; }
     const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -158,7 +290,7 @@ export class ReliefViewer {
     else { const triangles = []; for (let i = 0; i < base.faces.length; i += 4) triangles.push(base.faces[i], base.faces[i + 1], base.faces[i + 2], base.faces[i], base.faces[i + 2], base.faces[i + 3]); geometry.setIndex(triangles); }
     if (frame.normals) geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(frame.normals), 3)); else geometry.computeVertexNormals();
     const body = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: new THREE.Color(.04, .027, .016), metalness: .68, roughness: .34, envMap: this.environment, envMapIntensity: .09, side: THREE.DoubleSide }));
-    body.castShadow = true; body.receiveShadow = true; this.dynamic.add(body);
+    body.castShadow = true; body.receiveShadow = true; group.add(body);
     if (frame.p?.length && frame.n?.length) {
       // Preserve the observed contour centerlines; world-space width gives them
       // the fine filament volume of the original Blender curves while orbiting.
@@ -173,9 +305,8 @@ export class ReliefViewer {
       }
       contourGeometry.setColors(colors);
       const contours = new LineSegments2(contourGeometry, new LineMaterial({ vertexColors: true, worldUnits: true, linewidth: .018, alphaToCoverage: true, toneMapped: false, depthWrite: false }));
-      contours.renderOrder = 2; this.dynamic.add(contours);
+      contours.renderOrder = 2; group.add(contours);
     }
-    this.makeMarkers(region); this.resize(); if (regionChanged) this.reset(false); this.dirty = true; return true;
   }
   buildFixed(base, mode) {
     disposeGroup(this.fixed); const absolute = mode === 'absolute'; this.floor.position.z = absolute ? -1.1 : -2.6; this.floorShadow.position.z = this.floor.position.z + .002;
@@ -196,21 +327,86 @@ export class ReliefViewer {
   }
   makeMarkers(region) {
     this.markerLayer.replaceChildren(); this.markerNodes = [];
-    for (const anchor of this.spec.district_anchors || []) {
-      const district = region.districts.find((d) => String(d.id) === String(anchor.id)); if (!district) continue;
-      let nearest = 0, distance = Infinity;
-      for (let i = 0; i < this.base.xy.length; i += 2) { const d = (this.base.xy[i] - anchor.xyz[0]) ** 2 + (this.base.xy[i + 1] - anchor.xyz[1]) ** 2; if (d < distance) { distance = d; nearest = i / 2; } }
-      const position = new THREE.Vector3(anchor.xyz[0], anchor.xyz[1], Math.max(anchor.xyz[2] || 0, this.frame.z[nearest]) + .09);
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'hotspot'; button.setAttribute('aria-label', `${district.name} 중심으로 이동 및 정보`);
-      const name = document.createElement('span'); name.textContent = district.name; button.append(name); button.addEventListener('click', () => this.onSelect?.(String(district.id))); this.markerLayer.append(button);
-      this.markerNodes.push({ id: String(district.id), position, button });
+    for (const [pane, sampler] of (this.comparing ? [this.sampler, this.secondSampler] : [this.sampler]).entries()) {
+      for (const anchor of this.spec.district_anchors || []) {
+        const district = region.districts.find((d) => String(d.id) === String(anchor.id)); if (!district) continue;
+        const height = sampler.height(anchor.xyz[0], anchor.xyz[1]);
+        const position = new THREE.Vector3(anchor.xyz[0], anchor.xyz[1], (height ?? anchor.xyz[2] ?? 0) + .09);
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'hotspot';
+        button.setAttribute('aria-label', `${this.comparing ? `${pane ? this.compareYear : this.year}년 관측, ` : ''}${district.name} 중심으로 이동 및 정보`);
+        const name = document.createElement('span'); name.textContent = district.name; button.append(name); button.addEventListener('click', () => this.onSelect?.(String(district.id))); this.markerLayer.append(button);
+        this.markerNodes.push({ id: String(district.id), position, button, pane });
+      }
     }
     this.select(this.selected); this.setMarkersVisible(this.markersVisible);
   }
   projectMarkers() {
-    for (const item of this.markerNodes) { const p = item.position.clone().project(this.camera), visible = p.z >= -1 && p.z <= 1 && Math.abs(p.x) < 1.02 && Math.abs(p.y) < 1.02; item.button.hidden = !visible; item.button.style.left = `${(p.x + 1) * 50}%`; item.button.style.top = `${(1 - p.y) * 50}%`; }
+    const panes = this.panes();
+    for (const item of this.markerNodes) {
+      const p = item.position.clone().project(this.camera), pane = panes[item.pane];
+      const visible = pane && p.z >= -1 && p.z <= 1 && Math.abs(p.x) < .99 && Math.abs(p.y) < .99;
+      item.button.hidden = !visible;
+      if (pane) { item.button.style.left = `${100 * (pane.left + (p.x + 1) / 2 * pane.width)}%`; item.button.style.top = `${100 * (pane.top + (1 - p.y) / 2 * pane.height)}%`; }
+    }
   }
-  select(id) { this.selected = id ? String(id) : null; for (const item of this.markerNodes) { const active = item.id === this.selected; item.button.classList.toggle('selected', active); item.button.setAttribute('aria-pressed', String(active)); } this.dirty = true; }
+  setInteraction(interaction) {
+    this.interaction = interaction;
+    disposeGroup(this.quality);
+    const geometry = polygonGeometry(interaction?.missing);
+    if (geometry) {
+      this.qualityTexture ||= missingTexture();
+      const hatch = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: this.qualityTexture, transparent: true, opacity: .38, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+      // This flat hatch is a footprint on the reference plane, never a height
+      // value. Measured zero-valued cells remain part of the observed surface.
+      hatch.position.z = .032; hatch.renderOrder = 3; this.quality.add(hatch);
+    }
+    this.quality.visible = this.qualityVisible;
+    this.buildSelection(this.selection, this.sampler); this.buildSelection(this.secondarySelection, this.secondSampler);
+    this.dirty = true;
+  }
+  buildSelection(group, sampler) {
+    disposeGroup(group); if (!sampler || !this.selected) return;
+    const district = this.interaction?.districts?.find((entry) => String(entry.id) === this.selected); if (!district) return;
+    const observed = [], missing = [], footprint = [];
+    for (const polygon of district.polygons || []) {
+      for (const ring of [polygon.outer, ...(polygon.holes || [])]) {
+        if (!ring?.length) continue;
+        for (let i = 1; i <= ring.length; i++) {
+          const a = ring[i - 1], b = ring[i % ring.length], distance = Math.hypot(b[0] - a[0], b[1] - a[1]);
+          if (distance < 1e-9) continue;
+          footprint.push(a[0], a[1], .024, b[0], b[1], .024);
+          const steps = Math.max(1, Math.ceil(distance / (sampler.step * .5)));
+          let x = a[0], y = a[1], z = sampler.height(x, y);
+          for (let j = 1; j <= steps; j++) {
+            const nx = a[0] + (b[0] - a[0]) * j / steps, ny = a[1] + (b[1] - a[1]) * j / steps, nz = sampler.height(nx, ny);
+            if (z !== null && nz !== null) observed.push(x, y, z + .034, nx, ny, nz + .034);
+            else missing.push(x, y, .038, nx, ny, .038);
+            x = nx; y = ny; z = nz;
+          }
+        }
+      }
+    }
+    const referenceGeometry = new THREE.BufferGeometry(); referenceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(footprint, 3));
+    group.add(new THREE.LineSegments(referenceGeometry, new THREE.LineBasicMaterial({ color: 0x91b5c3, transparent: true, opacity: .28, depthWrite: false, toneMapped: false })));
+    if (observed.length) {
+      const geometry = new LineSegmentsGeometry().setPositions(observed);
+      const boundary = new LineSegments2(geometry, new LineMaterial({ color: 0xb8dde5, worldUnits: true, linewidth: .029, transparent: true, opacity: .88, alphaToCoverage: true, toneMapped: false, depthWrite: false }));
+      boundary.renderOrder = 4; group.add(boundary);
+    }
+    if (missing.length) {
+      const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(missing, 3));
+      const distances = []; let cursor = 0;
+      for (let i = 0; i < missing.length; i += 6) { distances.push(cursor); cursor += Math.hypot(missing[i + 3] - missing[i], missing[i + 4] - missing[i + 1]); distances.push(cursor); }
+      geometry.setAttribute('lineDistance', new THREE.Float32BufferAttribute(distances, 1));
+      const boundary = new THREE.LineSegments(geometry, new THREE.LineDashedMaterial({ color: 0xaab9c2, transparent: true, opacity: .7, dashSize: .07, gapSize: .05, depthWrite: false, toneMapped: false }));
+      boundary.renderOrder = 4; group.add(boundary);
+    }
+  }
+  select(id) {
+    this.selected = id ? String(id) : null;
+    for (const item of this.markerNodes) { const active = item.id === this.selected; item.button.classList.toggle('selected', active); item.button.setAttribute('aria-pressed', String(active)); }
+    this.buildSelection(this.selection, this.sampler); this.buildSelection(this.secondarySelection, this.secondSampler); this.dirty = true;
+  }
   focus(id) {
     this.select(id); const point = this.markerNodes.find((item) => item.id === String(id)); if (!point) return;
     const offset = this.camera.position.clone().sub(this.controls.target), target = point.position.clone(); this.move(target.clone().add(offset), target, Math.max(1.8, this.camera.zoom), true);
@@ -239,5 +435,6 @@ export class ReliefViewer {
     if (action) { event.preventDefault(); this.action(action); }
   }
   setMarkersVisible(visible) { this.markersVisible = visible; this.markerLayer.hidden = !visible; }
+  setQualityVisible(visible) { this.qualityVisible = !!visible; this.quality.visible = this.qualityVisible; this.dirty = true; }
   setActive(active) { this.active = active && !this.contextLost; if (this.active) { this.resize(); this.dirty = true; } }
 }

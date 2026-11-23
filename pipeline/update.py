@@ -133,6 +133,11 @@ def validate_site(dist,expected_years=None):
                     if image.width<640 or abs(image.width/image.height-16/9)>.01:raise ValueError('Unexpected artwork dimensions.')
                     image.verify()
     validate_interactive_art(dist,manifest)
+    if manifest.get('experience'):
+        from export_experience import validate as validate_experience
+        validate_experience(dist)
+    from edition_history import validate as validate_history
+    validate_history(dist)
     if (dist/'recent/data/manifest.json').is_file():
         from build_recent import validate_recent
         validate_recent(dist/'recent')
@@ -216,11 +221,20 @@ def build_edition(plan,blender,source_project=None,cpu=False,size=1920,samples=2
     receipts=read_json(stage/'data/metadata/source_receipts.json');m['source_files']=[{'year':r['year'],'url':r['url'],'sha256':r.get('sha256'),'status':r['status']} for r in receipts]
     write_json(manifest_path,m)
     run([sys.executable,stage/'pipeline/export_web3d.py','--project',stage,'--out',stage/'dist','--blender',blender],cwd=stage)
+    from export_experience import build as build_experience
+    build_experience(stage,stage/'dist')
     validate_interactive_art(stage/'dist',read_json(manifest_path),required=True)
     if plan['historical_replay']:
         destination=Path(replay_destination).resolve() if replay_destination else runtime/'replay'/str(plan['years'][-1])
         destination.parent.mkdir(parents=True,exist_ok=True)
     else:destination=ROOT/'dist'
+    from edition_history import prepare as prepare_history
+    if plan['historical_replay']:
+        # A replay is not a formerly published observation edition.
+        shutil.rmtree(stage/'dist/history',ignore_errors=True)
+        (stage/'dist/data/history.json').unlink(missing_ok=True)
+        prepare_history(stage/'dist')
+    else:prepare_history(stage/'dist',destination)
     result=promote(stage/'dist',destination,runtime/'releases',plan['years'])
     result.update({'status':'historical_replay' if plan['historical_replay'] else 'updated','heavy_build_performed':True,'stage':str(stage),'destination':str(destination)})
     return result

@@ -4851,7 +4851,8 @@
             }
           ]
         }
-      }
+      },
+      "interaction_url": "assets/interaction/seoul.json"
     },
     {
       "full_name": "부산광역시",
@@ -8632,7 +8633,8 @@
             }
           ]
         }
-      }
+      },
+      "interaction_url": "assets/interaction/busan.json"
     },
     {
       "full_name": "제주특별자치도",
@@ -10831,7 +10833,8 @@
             }
           ]
         }
-      }
+      },
+      "interaction_url": "assets/interaction/jeju.json"
     }
   ],
   "location_map_url": "assets/location_map.png",
@@ -10857,5 +10860,36 @@
     "blender_version": "4.4.0",
     "geometry_note": "Original mesh heights, XY, all polygon components and contours; no mesh decimation. GPU float32 conversion matches Blender.",
     "total_bytes": 53578448
+  },
+  "experience": {
+    "schema": 1,
+    "geometry": "original_relief_world_xy",
+    "quality_thresholds": [
+      0.1,
+      0.5,
+      1.0
+    ],
+    "all_observed_pairs": true,
+    "boundary_date": "2023-12-31",
+    "files": [
+      {
+        "region": "seoul",
+        "url": "assets/interaction/seoul.json",
+        "bytes": 1221671,
+        "sha256": "09145176e4f15d991ccf78a1823eb8e50a01ebbf735ed73885331167b25d16ba"
+      },
+      {
+        "region": "busan",
+        "url": "assets/interaction/busan.json",
+        "bytes": 876322,
+        "sha256": "95a5bf62702529e6091ca8053130a2d8b3fa71bab2847edfc7221d2ce87585a8"
+      },
+      {
+        "region": "jeju",
+        "url": "assets/interaction/jeju.json",
+        "bytes": 372106,
+        "sha256": "57c57a5f3d20e83c7974c85e3e26998296ffa31fd0296a6636f81ccedcf1135d"
+      }
+    ]
   }
 }

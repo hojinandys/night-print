@@ -27,7 +27,8 @@
       <h1 id="question-title">평균이 밝아지면,<br>모든 자리도 밝아질까.</h1>
       <p id="opening-copy" class="opening-copy">한 숫자로 접힌 밤을 다시 펼칩니다.<br class="mobile-break"> 세 지역의 빛, 그리고 그 안에 남은 다른 방향.</p>
       <div class="story-actions">
-        <button id="reveal-change" class="primary-action" type="button">변화 살펴보기 <span>기준 관측과 비교</span></button>
+        <button id="start-guide" class="primary-action" type="button">안내 감상 시작 <span>네 장면으로 읽는 밤</span></button>
+        <button id="reveal-change" class="secondary-action" type="button">변화 살펴보기 <span>기준 관측과 비교</span></button>
         <p id="story-hint">금빛 표면에서 시작해, 같은 자리의 변화를 살펴보세요.</p>
       </div>
     </section>
@@ -45,11 +46,27 @@
           <button type="button" data-mode="change" aria-pressed="false">변화</button>
         </div>
       </div>
+      <div class="experience-tools" role="group" aria-label="감상 도구">
+        <button id="compare-toggle" type="button" aria-pressed="false">두 시점 비교</button>
+        <button id="quality-toggle" type="button" aria-pressed="false">관측 범위</button>
+        <span class="tools-spacer"></span>
+        <button id="info-toggle" type="button" aria-expanded="true" aria-controls="place-panel">정보 접기</button>
+        <button id="cinema-toggle" type="button" aria-pressed="false">화면 채우기</button>
+      </div>
+      <section id="guided-story" class="guided-story" aria-labelledby="guide-step-title" hidden>
+        <div class="guide-progress" aria-label="감상 순서"><span>평균</span><span>차이</span><span>장소</span><span>다시 보기</span></div>
+        <div class="guide-story-content"><div><p id="guide-step-count" class="panel-eyebrow">01 / 04</p><h2 id="guide-step-title" tabindex="-1"></h2><p id="guide-step-body"></p></div><div class="guide-navigation"><button id="guide-prev" type="button">이전</button><button id="guide-next" type="button">다음 장면</button><button id="guide-exit" type="button">자유롭게 감상</button></div></div>
+      </section>
       <div class="scene-heading">
         <div><p id="art-title" class="scene-title">한 숫자로 접기 전의 밤</p><p id="scene-description">높이는 관측된 야간광입니다. 지역을 누르면 안으로 들어갑니다.</p></div>
         <div class="year-heading"><strong id="scene-year">—</strong><span id="scene-year-note">관측값</span></div>
       </div>
 
+      <div id="pair-controls" class="pair-controls" hidden>
+        <label for="compare-a"><span class="pair-letter">A</span> 처음 볼 관측 <select id="compare-a"></select></label>
+        <label for="compare-b"><span class="pair-letter">B</span> 함께 볼 관측 <select id="compare-b"></select></label>
+        <p>같은 위치 · 같은 높이 규칙 · 함께 움직이는 시점</p>
+      </div>
       <div id="load-state" class="load-state" role="status"><span class="load-line"></span>관측의 표면을 불러오고 있습니다.</div>
       <div id="load-error" class="load-error" hidden><p>작품 자료를 불러오지 못했습니다.</p><button id="retry-load" type="button">다시 불러오기</button></div>
 
@@ -64,20 +81,25 @@
               <img id="single-image" alt="" draggable="false">
               <div id="hotspots" class="hotspots" aria-label="구·군·시 대표 위치"></div>
             </div>
+            <div id="pair-fallback" class="pair-fallback" hidden></div>
+            <div id="pair-labels" class="pair-labels" aria-hidden="true" hidden><span id="pair-label-a"></span><span id="pair-label-b"></span></div>
+            <div id="view-compass" class="view-compass" title="화면에서 북쪽 방향" aria-label="화면에서 북쪽 방향"><span id="compass-arrow">↑</span><span>N</span></div>
             <p class="image-failure" id="single-image-error" hidden>이 관측의 이미지를 불러오지 못했습니다.</p>
             <p id="webgl-status" class="webgl-status" role="status" hidden></p>
           </div>
           <p id="orbit-instruction" class="orbit-instruction">지역의 입체 자료를 준비하고 있습니다.</p>
           <div class="detail-bottomline"><p id="point-instruction">표시된 지점이나 목록에서 구·군·시를 선택하세요.</p><label class="markers-toggle"><input id="show-markers" type="checkbox" checked> 지점 표시</label></div>
         </div>
-        <aside class="place-panel" aria-labelledby="place-title">
+        <aside id="place-panel" class="place-panel" aria-labelledby="place-title">
           <p class="panel-eyebrow">평균 안으로</p>
           <label class="select-label" for="district-select">구·군·시 선택</label>
           <div class="select-wrap"><select id="district-select"><option value="">전체 지역</option></select></div>
           <h2 id="place-title">서울특별시</h2>
           <p id="place-context" class="place-context">같은 관측 영역을 고정한 면적 가중 평균</p>
+          <section class="locator-panel" aria-labelledby="map-title"><div class="locator-heading"><h3 id="map-title">같은 자리의 지도</h3><span>↑ N</span></div><div id="linked-map" class="linked-map"></div><img id="region-map" alt="북쪽이 위인 지역 행정 경계 지도" loading="lazy" hidden><p id="map-status">지도에서 구역을 선택하면 입체에서도 같은 경계가 나타납니다.</p></section>
           <div class="place-main-value"><span id="place-value">—</span><span class="unit">nW/cm²/sr</span></div>
           <p id="place-value-label" class="metric-caption">평균 복사휘도</p>
+          <dl id="pair-values" class="pair-values" hidden><div><dt id="pair-value-a-label">A</dt><dd id="pair-value-a">—</dd></div><div><dt id="pair-value-b-label">B</dt><dd id="pair-value-b">—</dd></div></dl>
           <div id="place-chart" class="place-chart" role="img" aria-label="시점별 평균 야간광"></div>
           <dl class="place-metrics">
             <div><dt id="growth-label">기준 관측 대비 평균</dt><dd id="place-growth">—</dd></div>
@@ -85,7 +107,8 @@
             <div><dt>공통 관측 영역</dt><dd id="place-coverage">—</dd></div>
           </dl>
           <p id="place-note" class="place-note">면적 비율의 분모는 공통 관측 영역입니다.</p>
-          <details class="location-details"><summary>지도에서 위치 보기</summary><img id="region-map" alt="북쪽이 위인 지역 행정 경계 지도" loading="lazy"><p>입체의 지점은 구·군·시의 대표 위치입니다.<br>정보는 선택한 구역 전체의 집계이며 픽셀 한 점의 값이 아닙니다.</p></details>
+
+          <section id="quality-panel" class="quality-panel" aria-labelledby="quality-title" hidden><h3 id="quality-title">어디까지 관측했을까</h3><p id="quality-coverage"></p><div class="quality-legend"><span><i class="observed-key"></i>공통 관측</span><span><i class="missing-key"></i>공통 관측 제외</span></div><p id="quality-zero"></p><label for="change-threshold">작은 차이의 기준 <select id="change-threshold"><option value="0.1">± 0.1</option><option value="0.5" selected>± 0.5</option><option value="1">± 1.0</option></select></label><p id="quality-difference"></p><p class="quality-caution">단위: nW/cm²/sr. 이 기준은 차이의 크기를 읽는 보조선이며, 통계적 유의성이나 센서 오차 한계가 아닙니다. 공통 관측 제외는 실제 값 0과 다릅니다.</p></section>
         </aside>
       </div>
 
@@ -101,6 +124,10 @@
       <p id="update-notice" class="update-notice" role="status" hidden></p>
     </section>
 
+    <section class="observation-history" aria-labelledby="history-title">
+      <div><p class="eyebrow">이어지는 질문</p><h2 id="history-title">관측 기록</h2><p>자료가 바뀌면 표면도 다시 만듭니다.<br>이전 판의 값과 관측 범위는 그때의 상태로 남깁니다.</p></div>
+      <div class="history-content"><label for="history-select">기록된 관측 판</label><div class="history-selection"><select id="history-select" disabled><option>기록을 확인하는 중</option></select><button id="history-latest" type="button" hidden>최신 판으로</button></div><p id="history-status" role="status"></p><p id="history-period"></p><p id="history-summary"></p><ul id="history-changes"></ul><p class="history-note">관측 기간과 기록 시각은 다릅니다. 화면 디자인의 수정은 새 관측으로 세지 않습니다.</p></div>
+    </section>
     <section class="afterword" aria-labelledby="afterword-title">
       <div><p class="eyebrow">평균이 지운 자리</p><h2 id="afterword-title">평균의 방향과,<br>그 안의 자리.</h2></div>
       <div class="afterword-body"><p id="afterword-main">평균의 증가는 모든 장소의 같은 변화를 뜻하지 않습니다. 이 작품은 빛이 놓인 위치를 표면으로 펼쳐, 한 숫자만으로는 보이지 않는 방향을 함께 남깁니다.</p><p id="afterword-update">새로운 관측을 확보하면, 같은 경계와 기준으로 다시 계산합니다. 작품은 관측이 늘어나는 만큼 이 질문을 이어 갑니다.</p><button type="button" data-dialog="source-dialog" class="text-action">다음 관측을 기다리는 방식</button></div>

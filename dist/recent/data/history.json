@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "current_id": "652e6cc3072426d16333",
+  "editions": [
+    {
+      "id": "652e6cc3072426d16333",
+      "label": "2025.10 ↔ 2026.10",
+      "kind": "monthly_same_month",
+      "period_label": "2025.10 ↔ 2026.10",
+      "observed_from": "2025.10",
+      "observed_to": "2026.10",
+      "recorded_at": "2026-11-23T12:00:08.519197+00:00",
+      "manifest_url": "history/652e6cc3072426d16333/manifest.json",
+      "is_current": true,
+      "reason": "관측 기록 시작",
+      "summary": "현재 공개된 관측 자료를 처음 보존했습니다. 과거 게시 이력은 소급해 만들지 않았습니다.",
+      "changes": [
+        "현재 공개된 관측 자료를 처음 보존했습니다. 과거 게시 이력은 소급해 만들지 않았습니다."
+      ]
+    }
+  ]
+}

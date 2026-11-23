@@ -1,0 +1,29 @@
+{
+  "validated": true,
+  "regions": 3,
+  "districts": 43,
+  "observed_pairs": 184,
+  "area_checks": [
+    {
+      "region": "seoul",
+      "weighted_observed_m2": 607412491.1192639,
+      "polygon_observed_m2": 607412491.119264,
+      "absolute_error_m2": 1.1920928955078125e-07,
+      "districts": 25
+    },
+    {
+      "region": "busan",
+      "weighted_observed_m2": 781081927.5832605,
+      "polygon_observed_m2": 781081927.5832609,
+      "absolute_error_m2": 3.5762786865234375e-07,
+      "districts": 16
+    },
+    {
+      "region": "jeju",
+      "weighted_observed_m2": 1821533846.0352225,
+      "polygon_observed_m2": 1821533846.035222,
+      "absolute_error_m2": 4.76837158203125e-07,
+      "districts": 2
+    }
+  ]
+}

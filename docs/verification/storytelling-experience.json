@@ -1,0 +1,47 @@
+{
+  "verified_at": "2026-11-23T12:11:28.341878+00:00",
+  "automated_tests": 67,
+  "checks": {
+    "annual": {
+      "existing_observations_and_3d_unchanged": true,
+      "interaction": {
+        "validated": true,
+        "regions": 3,
+        "districts": 43,
+        "observed_pairs": 3726
+      },
+      "history": {
+        "edition_count": 1,
+        "verified_assets": 119
+      }
+    },
+    "monthly": {
+      "existing_observations_and_3d_unchanged": true,
+      "interaction": {
+        "validated": true,
+        "regions": 3,
+        "districts": 43,
+        "observed_pairs": 184
+      },
+      "history": {
+        "edition_count": 1,
+        "verified_assets": 35
+      }
+    }
+  },
+  "browser_checks": {
+    "four_stage_real_data_guide": true,
+    "same_observation_zero_difference": true,
+    "reversed_pair_reverses_direction": true,
+    "linked_map_district_selection": true,
+    "comparison_shared_camera_and_compass": true,
+    "common_area_and_small_change_context": true,
+    "immersive_canvas_fits_viewport": true,
+    "narrow_viewport_stacks_two_observations": true,
+    "archived_snapshot_and_return_to_latest": true,
+    "archive_test_used_private_same_observation_fixture": true,
+    "actual_image_fallback_when_3d_is_unavailable": true,
+    "console_errors": 0
+  },
+  "history_policy": "Only currently preserved observation editions are published. First record per edition; no invented past releases. UI/check timestamps do not create observations."
+}
