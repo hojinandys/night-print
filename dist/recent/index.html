@@ -36,8 +36,8 @@
     <section id="artwork" class="artwork" aria-labelledby="art-title" aria-busy="true">
       <div class="art-toolbar">
         <div class="region-tabs" role="group" aria-label="감상할 지역">
-          <button type="button" class="active" data-region="all" aria-pressed="true">세 지역</button>
-          <button type="button" data-region="seoul" aria-pressed="false">서울</button>
+          <button type="button" data-region="all" aria-pressed="false">세 지역</button>
+          <button type="button" class="active" data-region="seoul" aria-pressed="true">서울</button>
           <button type="button" data-region="busan" aria-pressed="false">부산</button>
           <button type="button" data-region="jeju" aria-pressed="false">제주</button>
         </div>
@@ -47,7 +47,7 @@
         </div>
       </div>
       <div class="experience-tools" role="group" aria-label="감상 도구">
-        <button id="compare-toggle" type="button" aria-pressed="false">두 시점 비교</button>
+        <button id="compare-toggle" type="button" aria-pressed="false" aria-controls="pair-controls single-viewport"><span class="compare-switch" aria-hidden="true"></span><span id="compare-action">비교 켜기</span></button>
         <button id="quality-toggle" type="button" aria-pressed="false">관측 범위</button>
         <span class="tools-spacer"></span>
         <button id="info-toggle" type="button" aria-expanded="true" aria-controls="place-panel">정보 접기</button>

@@ -2,7 +2,7 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const state = { data: null, region: 'all', mode: 'absolute', yearIndex: 0, district: null, timer: null, zoom: false, renderToken: 0, guide: null, guideTarget: null, compare: false, compareA: null, compareB: null, quality: false, threshold: '0.5', infoHidden: false, immersive: false, archiveId: null, history: null, historyLoading: false, interaction: null };
+  const state = { data: null, region: 'seoul', mode: 'absolute', yearIndex: 0, district: null, timer: null, zoom: false, renderToken: 0, guide: null, guideTarget: null, compare: false, compareA: null, compareB: null, quality: false, threshold: '0.5', infoHidden: false, immersive: false, archiveId: null, history: null, historyLoading: false, interaction: null };
   const interactionCache = new Map();
   let loadingKey = '', mapToken = 0, historyToken = 0;
   let viewerPromise = null, viewer = null, viewerKey = '', viewerReady = false, pendingFocus = null;
@@ -159,7 +159,7 @@
     $('scene-year').textContent = changed ? `${periodLabel(year())} − ${periodLabel(baseline())}` : periodLabel(year());
     $('scene-year-note').textContent = changed ? `같은 위치의 ${observation()} 차이` : observation();
     $('art-title').textContent = changed ? '평균이 지운 자리' : '한 숫자로 접기 전의 밤';
-    $('scene-description').textContent = changed ? '금빛은 증가, 푸른빛은 감소입니다. 같은 자리의 다른 방향을 봅니다.' : `높이는 ${observation()}입니다. 지역을 누르면 안으로 들어갑니다.`;
+    $('scene-description').textContent = changed ? '금빛은 증가, 푸른빛은 감소입니다. 같은 자리의 다른 방향을 봅니다.' : state.region === 'all' ? `높이는 ${observation()}입니다. 지역을 누르면 안으로 들어갑니다.` : '한 작품을 크게 돌려 봅니다. 다른 시점과 나란히 보고 싶을 때 비교를 켜세요.';
     if (year() === baseline() && changed) $('scene-description').textContent = '비교의 기준이 되는 관측입니다. 같은 관측에서 같은 값을 빼면 차이는 0입니다.';
     $('story-hint').textContent = changed ? '평균의 방향과, 그 안의 자리를 함께 봅니다. 지역 안으로 들어가 보세요.' : '금빛 표면에서 시작해, 같은 자리의 변화를 살펴보세요.';
     const action = $('reveal-change'); action.replaceChildren(document.createTextNode(changed ? '빛의 양으로 돌아가기 ' : monthly() ? '지난해 같은 달 대비 ' : '처음의 빛을 빼기 '));
@@ -175,6 +175,9 @@
     $('pair-labels').hidden = !state.compare;
     $('timeline').hidden = state.compare;
     $('compare-toggle').setAttribute('aria-pressed', String(state.compare));
+    $('compare-action').textContent = state.compare ? '비교 끄기' : '비교 켜기';
+    $('compare-toggle').setAttribute('aria-label', state.compare ? '두 시점 비교 끄기, 한 작품으로 보기' : '두 시점 비교 켜기');
+    $('compare-toggle').title = state.compare ? `${periodLabel(state.compareB)}의 한 작품으로 돌아갑니다` : '현재 보는 관측과 다른 시점을 나란히 봅니다';
     $('quality-toggle').setAttribute('aria-pressed', String(state.quality));
     $('info-toggle').disabled = state.region === 'all';
     $('quality-panel').hidden = !state.quality;
@@ -361,15 +364,18 @@
     const chapter = chapters[state.guide];
     $('guide-step-count').textContent = `0${state.guide+1} / 04 · ${label(r)}`;
     $('guide-step-title').textContent = chapter.title; $('guide-step-body').textContent = chapter.body;
-    $('guide-prev').disabled = state.guide === 0; $('guide-next').textContent = state.guide === 3 ? '직접 이어 보기' : '다음 장면';
+    $('guide-prev').disabled = state.guide === 0; $('guide-next').textContent = state.guide === 3 ? '단일 감상으로 이어 보기' : '다음 장면';
     document.querySelectorAll('.guide-progress span').forEach((node,index) => { node.classList.toggle('active',index === state.guide); node.classList.toggle('complete',index < state.guide); if(index === state.guide) node.setAttribute('aria-current','step'); else node.removeAttribute('aria-current'); });
   }
   function toggleComparison() {
     if (!state.data) return;
+    // Enter from the observation already being viewed; leaving keeps B and
+    // the selected district/camera instead of jumping to a different year.
+    if (!state.compare) state.compareB = year();
     leaveGuide(); stopPlay(); state.compare = !state.compare;
     if (state.region === 'all') { state.region = state.data.regions.find((r) => r.id === 'seoul')?.id || state.data.regions[0].id; state.interaction = null; state.district = null; }
     state.mode = 'absolute'; state.yearIndex = yearIndex(state.compareB);
-    render(); announce(state.compare ? '두 시점 비교. A와 B는 같은 카메라와 같은 높이 규칙으로 표시됩니다.' : '한 시점의 밝기로 돌아왔습니다.');
+    render(); announce(state.compare ? '비교 켜짐. A와 B를 함께 회전합니다. 비교 끄기를 누르면 한 작품으로 돌아갑니다.' : `비교 꺼짐. ${periodName(year())}의 한 작품을 크게 감상합니다.`);
   }
   function syncInfo() {
     $('artwork').classList.toggle('information-hidden',state.infoHidden);
@@ -549,8 +555,8 @@
   $('start-guide').setAttribute('aria-controls','guided-story');
   $('start-guide').addEventListener('click', () => { state.guideTarget = null; setGuide(0); });
   $('guide-prev').addEventListener('click', () => setGuide(state.guide-1));
-  $('guide-next').addEventListener('click', () => { if (state.guide === 3) { leaveGuide(); $('compare-a').focus(); announce('안내가 끝났습니다. 두 관측을 직접 선택하며 감상하세요.'); } else setGuide(state.guide+1); });
-  $('guide-exit').addEventListener('click', () => { leaveGuide(); $('compare-toggle').focus(); announce('자유 감상으로 전환했습니다.'); });
+  $('guide-next').addEventListener('click', () => { if (state.guide === 3) { toggleComparison(); $('compare-toggle').focus({preventScroll:true}); announce('안내가 끝났습니다. 한 작품으로 돌아왔습니다. 비교는 언제든 다시 켤 수 있습니다.'); } else setGuide(state.guide+1); });
+  $('guide-exit').addEventListener('click', () => { if (state.compare) toggleComparison(); else leaveGuide(); $('compare-toggle').focus({preventScroll:true}); announce('자유 감상으로 전환했습니다. 비교는 필요할 때 켤 수 있습니다.'); });
   $('compare-toggle').addEventListener('click',toggleComparison);
   ['compare-a','compare-b'].forEach((id) => $(id).addEventListener('change', (event) => { leaveGuide(); stopPlay(); state[id === 'compare-a' ? 'compareA' : 'compareB'] = Number(event.target.value); state.yearIndex = yearIndex(state.compareB); render(); }));
   $('quality-toggle').addEventListener('click', () => {
