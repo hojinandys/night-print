@@ -29,7 +29,7 @@
   "update": {
     "state": "up_to_date",
     "latest_year": 2023,
-    "last_checked": "2026-11-23T09:39:28.066153+00:00",
+    "last_checked": "2026-11-23T10:13:41.889698+00:00",
     "available_years": [
       2015,
       2016,
@@ -40,7 +40,8 @@
       2021,
       2022,
       2023
-    ]
+    ],
+    "new_observation": false
   },
   "reading": {
     "height_absolute": "높이 = 연평균 복사휘도 · 같은 로그 변환",
