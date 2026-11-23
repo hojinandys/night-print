@@ -78,7 +78,7 @@ def update_lock(path):
         yield
     finally:path.unlink(missing_ok=True)
 
-VIEWER_FILES=('viewer3d.js','vendor/three.module.js','vendor/three.core.js',
+VIEWER_FILES=('viewer3d.js','story.mjs','immersive-focus.mjs','observation-cache.mjs','vendor/three.module.js','vendor/three.core.js',
               'vendor/OrbitControls.js','vendor/RoomEnvironment.js',
               'vendor/LineSegments2.js','vendor/LineSegmentsGeometry.js','vendor/LineMaterial.js',
               'vendor/THREE-LICENSE.txt')
@@ -91,7 +91,7 @@ def copy_interactive_viewer(source,destination):
         if not path.is_file() or path.stat().st_size==0:
             raise ValueError(f'Missing interactive viewer dependency: {relative}')
     destination.mkdir(parents=True,exist_ok=True)
-    for relative in ('index.html','app.js','style.css','viewer3d.js'):
+    for relative in ('index.html','app.js','style.css',*(name for name in VIEWER_FILES if not name.startswith('vendor/'))):
         shutil.copy2(source/relative,destination/relative)
     shutil.copytree(source/'vendor',destination/'vendor',dirs_exist_ok=True)
 

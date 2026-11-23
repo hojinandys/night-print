@@ -1,0 +1,42 @@
+{
+  "review_date_local": "2026-11-24",
+  "time_zone": "Asia/Seoul",
+  "scope": "Regional data-based guides, selected-only markers, recoverable maps, immersive keyboard focus. Existing visual design and observation values preserved.",
+  "tests": {
+    "python_unittest": {
+      "passed": 67,
+      "failed": 0
+    },
+    "node_test": {
+      "passed": 22,
+      "failed": 0
+    },
+    "annual_site_validation": "valid",
+    "monthly_site_validation": "valid",
+    "future_observations": "Exact numeric regression assertions read immutable real snapshots; live-edition checks derive periods and values dynamically. Alternate-month fixture passed."
+  },
+  "ui": {
+    "annual_busan": "Guide selects Dong-gu -4.6% against Busan +20.0%; selected marker 1, all 16, comparison 2, guide completion returns single 1.",
+    "annual_jeju": "Guide states Jeju-si +34.1%, Seogwipo +65.9%; Jeju-si lower area 6.0%, not a declining-city claim.",
+    "monthly_busan": "Guide selects Buk-gu +8.5% with 46.6% lower area; explicitly states all district means rose.",
+    "monthly_jeju": "Guide compares Jeju-si +9.9%, Seogwipo +7.4%; lower area 39.2% in selected Seogwipo.",
+    "immersive_fallback": "Background inert, Tab/Shift+Tab wrap, dialog reparent/open/Escape, exit focus restored, re-entry cleanup passed.",
+    "native_fullscreen": "Browser used fixed-position fullscreen fallback; native fullscreen path not independently exercised.",
+    "map_failure_recovery": "Private local HTTP fixture returns first Seoul map request 503 and delays 3D static geometry. Retry succeeds before 3D ready. Map, selected marker and cyan 3D boundary recover.",
+    "mobile": "390 CSS pixel viewport has document width 390 and toolbar max right 366.6; comparison axis vertical.",
+    "image_fallback": "No WebGL fixture: marker counts 0 before selection, 1 after Jongno selection, 25 with all points enabled.",
+    "local_console": "No errors or warnings in normal annual page; one intentional HTTP 503 in recovery fixture."
+  },
+  "independent_review": "One recovery race identified and fixed: apply recovered interaction after delayed surface load, before display.",
+  "data_and_visual_assets": "No observation data, render image, geometry, camera or lighting source changes.",
+  "shared_edition_files": {
+    "index.html": "89ecac562835b5ca0f1932cdd076a6eee1bebbac8297241f2d988b048572473f",
+    "app.js": "9b8bddfce4046970830ffef667152145c753ee66bafdd90082194208cef768a2",
+    "style.css": "83fd858254f15430f6f7693cdcd79ed7a712c71b085a3938695e46a54aad25ca",
+    "viewer3d.js": "6b0b90be8ce89e50498ebc2576cdcfc998f30acea8a0994c1492e397e6a6898b",
+    "story.mjs": "c5516a49088aa1f92f5e0d077cbcbebc62b89a9ae0c34346f035128afc8288bd",
+    "immersive-focus.mjs": "c0cf0962816532274cbabd37a2a7be9dba1199d67ab4b5d322cbfdf392beb338",
+    "observation-cache.mjs": "5cf1b07ff7bd4949306ad2916a764d5575227f6ca746e224d13ecfa964911693"
+  },
+  "deployment": "Local verification completed before publication; public confirmation accompanies the delivery package."
+}

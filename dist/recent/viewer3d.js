@@ -147,7 +147,7 @@ function surfaceSampler(base, frame) {
 export class ReliefViewer {
   constructor(host, { onSelect, onError, onMove, onView } = {}) {
     this.host = host; this.onSelect = onSelect; this.onError = onError; this.onMove = onMove; this.onView = onView;
-    this.active = true; this.dirty = true; this.contextLost = false; this.generation = 0; this.markersVisible = true; this.markerNodes = [];
+    this.active = true; this.dirty = true; this.contextLost = false; this.generation = 0; this.markersVisible = false; this.markerNodes = [];
     this.comparing = false; this.qualityVisible = false; this.interaction = null;
     this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
@@ -332,7 +332,7 @@ export class ReliefViewer {
         const district = region.districts.find((d) => String(d.id) === String(anchor.id)); if (!district) continue;
         const height = sampler.height(anchor.xyz[0], anchor.xyz[1]);
         const position = new THREE.Vector3(anchor.xyz[0], anchor.xyz[1], (height ?? anchor.xyz[2] ?? 0) + .09);
-        const button = document.createElement('button'); button.type = 'button'; button.className = 'hotspot';
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'hotspot'; button.hidden = true;
         button.setAttribute('aria-label', `${this.comparing ? `${pane ? this.compareYear : this.year}년 관측, ` : ''}${district.name} 중심으로 이동 및 정보`);
         const name = document.createElement('span'); name.textContent = district.name; button.append(name); button.addEventListener('click', () => this.onSelect?.(String(district.id))); this.markerLayer.append(button);
         this.markerNodes.push({ id: String(district.id), position, button, pane });
@@ -342,12 +342,18 @@ export class ReliefViewer {
   }
   projectMarkers() {
     const panes = this.panes();
+    let anyVisible = false;
     for (const item of this.markerNodes) {
       const p = item.position.clone().project(this.camera), pane = panes[item.pane];
-      const visible = pane && p.z >= -1 && p.z <= 1 && Math.abs(p.x) < .99 && Math.abs(p.y) < .99;
+      const allowed = this.markersVisible || item.id === this.selected;
+      const visible = allowed && pane && p.z >= -1 && p.z <= 1 && Math.abs(p.x) < .99 && Math.abs(p.y) < .99;
       item.button.hidden = !visible;
+      anyVisible ||= !!visible;
       if (pane) { item.button.style.left = `${100 * (pane.left + (p.x + 1) / 2 * pane.width)}%`; item.button.style.top = `${100 * (pane.top + (1 - p.y) / 2 * pane.height)}%`; }
     }
+    // "All markers" off still retains the selected district in each pane.
+    // Hidden markers also leave keyboard navigation, not just the painting.
+    this.markerLayer.hidden = !anyVisible;
   }
   setInteraction(interaction) {
     this.interaction = interaction;
@@ -405,7 +411,7 @@ export class ReliefViewer {
   select(id) {
     this.selected = id ? String(id) : null;
     for (const item of this.markerNodes) { const active = item.id === this.selected; item.button.classList.toggle('selected', active); item.button.setAttribute('aria-pressed', String(active)); }
-    this.buildSelection(this.selection, this.sampler); this.buildSelection(this.secondarySelection, this.secondSampler); this.dirty = true;
+    this.buildSelection(this.selection, this.sampler); this.buildSelection(this.secondarySelection, this.secondSampler); this.projectMarkers(); this.dirty = true;
   }
   focus(id) {
     this.select(id); const point = this.markerNodes.find((item) => item.id === String(id)); if (!point) return;
@@ -434,7 +440,7 @@ export class ReliefViewer {
     const action = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', '+': 'in', '=': 'in', '-': 'out', _: 'out', r: 'reset', R: 'reset' }[event.key];
     if (action) { event.preventDefault(); this.action(action); }
   }
-  setMarkersVisible(visible) { this.markersVisible = visible; this.markerLayer.hidden = !visible; }
+  setMarkersVisible(visible) { this.markersVisible = !!visible; this.projectMarkers(); this.dirty = true; }
   setQualityVisible(visible) { this.qualityVisible = !!visible; this.quality.visible = this.qualityVisible; this.dirty = true; }
   setActive(active) { this.active = active && !this.contextLost; if (this.active) { this.resize(); this.dirty = true; } }
 }

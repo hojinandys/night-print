@@ -1,9 +1,13 @@
 'use strict';
+import { createGuide } from './story.mjs';
+import { createImmersiveFocus } from './immersive-focus.mjs';
+import { createObservationCache } from './observation-cache.mjs';
 (() => {
   const $ = (id) => document.getElementById(id);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const state = { data: null, region: 'seoul', mode: 'absolute', yearIndex: 0, district: null, timer: null, zoom: false, renderToken: 0, guide: null, guideTarget: null, compare: false, compareA: null, compareB: null, quality: false, threshold: '0.5', infoHidden: false, immersive: false, archiveId: null, history: null, historyLoading: false, interaction: null };
-  const interactionCache = new Map();
+  const interactionCache = createObservationCache();
+  const immersiveFocus = createImmersiveFocus($('artwork'), $('cinema-toggle'));
   let loadingKey = '', mapToken = 0, historyToken = 0;
   let viewerPromise = null, viewer = null, viewerKey = '', viewerReady = false, pendingFocus = null;
   const finite = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -44,16 +48,31 @@
   async function loadInteraction(r) {
     if (!r.interaction_url) return null;
     const url = editionAsset(r.interaction_url);
-    if (!interactionCache.has(url)) interactionCache.set(url, fetch(url).then((response) => {
-      if (!response.ok) throw new Error('Boundary data unavailable');
-      return response.json();
-    }).catch(() => null));
-    return interactionCache.get(url);
+    const years = [...state.data.years];
+    return interactionCache.get(url, (data) => data?.schema === 1 && data.region === r.id &&
+      JSON.stringify(data.years) === JSON.stringify(years) && Array.isArray(data.bounds) &&
+      Array.isArray(data.districts) && data.districts.length === r.districts.length).catch(() => null);
+  }
+  function retryMap() {
+    if (!state.data || state.region === 'all') return;
+    const r = region();
+    interactionCache.clear(editionAsset(r.interaction_url || ''));
+    state.interaction = null;
+    $('retry-map').disabled = true;
+    $('map-status').textContent = '지도와 관측 범위를 다시 불러오고 있습니다.';
+    renderDetail();
+  }
+  function syncMarkers() {
+    const showAll = $('show-markers').checked;
+    $('hotspots').hidden = false;
+    $('hotspots').querySelectorAll('.hotspot').forEach((node) => { node.hidden = !showAll && !node.classList.contains('selected'); });
+    viewer?.setMarkersVisible(showAll);
   }
   function leaveGuide() {
     state.guide = null; state.guideTarget = null;
     $('guided-story').hidden = true;
     $('start-guide').setAttribute('aria-expanded', 'false');
+    $('regional-guide').setAttribute('aria-expanded', 'false');
   }
   function editionAsset(path) {
     const version = state.data?.release_id || state.data?.updated_utc;
@@ -144,6 +163,8 @@
       if (token !== state.renderToken || state.region === 'all') return;
       const loaded = await instance.show(r, selectedYear, selectedMode, { compareYear, interaction });
       if (!loaded || token !== state.renderToken || state.region === 'all') return;
+      // A map retry may have recovered while the surface was still loading.
+      if (state.interaction && instance.interaction !== state.interaction) instance.setInteraction(state.interaction);
       viewerKey = key; viewerReady = true; $('single-scene').hidden = true; $('pair-fallback').hidden = true; $('single-image-error').hidden = true; $('webgl-view').hidden = false; $('webgl-status').hidden = true; $('view-compass').hidden = false;
       instance.setActive(true); instance.setMarkersVisible($('show-markers').checked); instance.select(state.district); instance.setQualityVisible?.(state.quality);
       if (pendingFocus && pendingFocus === state.district) instance.focus(pendingFocus);
@@ -178,6 +199,8 @@
     $('compare-action').textContent = state.compare ? '비교 끄기' : '비교 켜기';
     $('compare-toggle').setAttribute('aria-label', state.compare ? '두 시점 비교 끄기, 한 작품으로 보기' : '두 시점 비교 켜기');
     $('compare-toggle').title = state.compare ? `${periodLabel(state.compareB)}의 한 작품으로 돌아갑니다` : '현재 보는 관측과 다른 시점을 나란히 봅니다';
+    $('regional-guide').textContent = state.region === 'all' ? '안내 감상' : `${label(region())}의 이야기`;
+    $('regional-guide').setAttribute('aria-expanded', String(state.guide !== null));
     $('quality-toggle').setAttribute('aria-pressed', String(state.quality));
     $('info-toggle').disabled = state.region === 'all';
     $('quality-panel').hidden = !state.quality;
@@ -244,10 +267,10 @@
       const anchor = d.anchor_by_mode?.[state.mode] || d.anchor; if (!anchor || !finite(anchor.x) || !finite(anchor.y)) return;
       const button = el('button', 'hotspot'); button.type = 'button'; button.style.left = `${anchor.x * 100}%`; button.style.top = `${anchor.y * 100}%`; button.classList.toggle('cold', state.mode === 'change' && series(d).change < 0); button.classList.toggle('selected', String(d.id) === String(state.district)); button.setAttribute('aria-label', `${d.name} 확대 및 정보`); button.setAttribute('aria-pressed', String(String(d.id) === String(state.district))); button.append(el('span', '', d.name)); button.addEventListener('click', () => selectDistrict(d.id)); hotspots.append(button);
     });
-    hotspots.hidden = !$('show-markers').checked;
+    syncMarkers();
     $('single-scene').style.transform = ''; $('single-scene').classList.remove('zoomed');
     $('reset-view').hidden = !viewerReady && !state.district;
-    $('point-instruction').textContent = selected ? `${selected.name}의 경계 · 수치는 구역 전체 집계` : '입체의 지점, 지도, 목록에서 같은 구역을 선택할 수 있습니다.';
+    $('point-instruction').textContent = selected ? `${selected.name}의 경계 · 수치는 구역 전체 집계` : '지도나 목록에서 장소를 고르세요. 선택한 지점만 작품에 남습니다.';
     $('place-title').textContent = selected ? selected.name : (r.full_name || label(r));
     $('place-context').textContent = `이 판의 ${commonArea()} · 면적 가중 평균`;
     $('place-value').textContent = fmt(state.compare ? compared.change : state.mode === 'change' ? values.change : values.mean, 2, state.compare || state.mode === 'change');
@@ -260,10 +283,15 @@
     $('place-decrease').textContent = pct(record?.lower_area_pct ?? (state.compare ? null : values.decreased_area_pct)); $('place-coverage').textContent = pct(entity.coverage_pct);
     $('place-note').textContent = `${periodName(b)} 값이 ${periodName(a)}보다 낮은 면적의 비율입니다. 분모는 공통 관측 영역이며 작은 음수도 포함합니다.${state.compare && !record ? ' 이 두 시점의 면적 통계를 불러오는 중입니다.' : ''}${Number(entity.coverage_pct) < 85 ? ' 관측 범위가 제한되어 전체 지역으로 확대 해석하지 않습니다.' : ''}`;
     drawChart(entity); renderQuality(entity); updateMapSelection(); update3D(r);
+    if (!state.interaction) {
+      $('map-status').textContent = '지도와 관측 범위를 불러오고 있습니다.';
+      $('retry-map').disabled = true;
+    }
     const token = ++mapToken, currentData = state.data;
     loadInteraction(r).then((data) => {
       if (token !== mapToken || state.region !== r.id || state.data !== currentData) return;
       state.interaction = data; renderMap(r, data); renderQuality(entity);
+      if (data && viewerReady && viewer?.regionId === r.id && viewer.interaction !== data) viewer.setInteraction(data);
       const record = pairRecord(entity);
       $('place-decrease').textContent = pct(record?.lower_area_pct ?? (state.compare ? null : series(entity).decreased_area_pct));
       if (state.compare) $('place-note').textContent = `${periodName(pair()[1])} 값이 ${periodName(pair()[0])}보다 낮은 면적의 비율입니다. 분모는 공통 관측 영역이며 작은 음수도 포함합니다.${!record ? ' 이 관측 조합의 면적 통계를 제공하지 못해 —로 표시합니다.' : ''}${Number(entity.coverage_pct) < 85 ? ' 관측 범위가 제한되어 전체 지역으로 확대 해석하지 않습니다.' : ''}`;
@@ -279,11 +307,13 @@
   }
   function renderMap(r, data) {
     const target = $('linked-map'), key = `${editionAsset(r.interaction_url || '')}/${r.id}`;
+    $('retry-map').disabled = false;
+    $('retry-map').hidden = !!data;
     $('region-map').hidden = !!data || !r.map_url;
     if (!data || !Array.isArray(data.bounds) || !data.districts?.length) {
       target.replaceChildren(); target.dataset.key = '';
       if (r.map_url) $('region-map').src = editionAsset(r.map_url);
-      $('map-status').textContent = '연동 경계를 불러오지 못했습니다. 위 목록에서 구역별 수치를 확인할 수 있습니다.'; return;
+      $('map-status').textContent = '연동 지도를 불러오지 못했습니다. 다시 시도하거나 위 목록에서 구역을 고를 수 있습니다.'; return;
     }
     if (target.dataset.key !== key) {
       const [minX,minY,maxX,maxY] = data.bounds, pad = Math.max(maxX-minX,maxY-minY) * .045;
@@ -304,6 +334,7 @@
   function updateMapSelection() {
     $('linked-map').classList.toggle('show-quality', state.quality);
     $('linked-map').querySelectorAll('[data-district]').forEach((path) => { const selected = String(path.dataset.district) === String(state.district); path.classList.toggle('selected', selected); path.setAttribute('aria-pressed', String(selected)); });
+    if (!state.interaction) return;
     const selected = region()?.districts.find((d) => String(d.id) === String(state.district));
     $('map-status').textContent = selected ? `${selected.name} 선택됨. 같은 경계가 입체에 표시됩니다. 공통 관측에서 제외된 경계 구간은 기준면에 표시합니다.` : '북쪽이 위인 지도입니다. 구역을 누르면 입체에서도 같은 경계를 따라갑니다.';
   }
@@ -324,11 +355,7 @@
     preloadNext();
   }
   function findGuideTarget() {
-    const lastIndex = state.data.years.length - 1;
-    const regions = state.data.regions.map((r) => ({ r, value: series(r, lastIndex), counterexample: r.districts.filter((d) => Number(d.coverage_pct) >= 85 && series(d, lastIndex).change < 0).sort((a,b) => series(a,lastIndex).percent_change - series(b,lastIndex).percent_change)[0] }));
-    const candidate = regions.find((entry) => entry.value.change > 0 && entry.counterexample) || regions.find((entry) => entry.value.change > 0) || regions[0];
-    const district = candidate.counterexample || [...candidate.r.districts].filter((d) => finite(series(d,lastIndex).mean)).sort((a,b) => series(a,lastIndex).percent_change - series(b,lastIndex).percent_change)[0];
-    return { region: candidate.r.id, district: district?.id || null, counterexample: !!candidate.counterexample && candidate.value.change > 0 };
+    return createGuide(state.data, state.region);
   }
   function setGuide(step) {
     if (!state.data) return;
@@ -352,16 +379,8 @@
     $('guided-story').hidden = state.guide === null;
     $('start-guide').setAttribute('aria-expanded', String(state.guide !== null));
     if (state.guide === null || !state.guideTarget) return;
-    const r = state.data.regions.find((item) => item.id === state.guideTarget.region), d = r.districts.find((item) => String(item.id) === String(state.guideTarget.district));
-    const last = state.data.years.length - 1, value = series(r,last), districtValue = d && series(d,last), first = periodLabel(baseline()), latest = periodLabel(state.data.years[last]);
-    const direction = value.change > 0 ? '밝아졌습니다' : value.change < 0 ? '낮아졌습니다' : '같습니다';
-    const chapters = [
-      { title:`${label(r)}의 평균은 ${direction}`, body:`${first}의 ${fmt(series(r,0).mean,2)}에서 ${latest}의 ${fmt(value.mean,2)}로, 평균은 ${pct(value.percent_change,true)} 움직였습니다. 먼저 금빛의 높낮이를 천천히 돌려 보세요. 이 한 숫자 안에는 얼마나 다른 장소가 들어 있을까요?` },
-      { title:'처음의 빛을 빼면, 방향이 보입니다', body:`같은 자리에서 ${first}의 값을 뺐습니다. 금빛은 높아진 자리, 푸른빛은 낮아진 자리입니다. ${latest}에 값이 더 낮은 면적은 공통 관측 영역의 ${pct(value.decreased_area_pct)}입니다. 색이 맞닿는 경계를 살펴보세요. 작은 차이도 이 비율에 포함됩니다.` },
-      state.guideTarget.counterexample ? { title:`${d.name}, 평균과 다른 방향`, body:`${label(r)} 전체의 평균은 ${pct(value.percent_change,true)}이지만, ${d.name}의 평균은 ${pct(districtValue.percent_change,true)}입니다. 입체의 밝은 경계와 지도의 같은 구역을 따라 보세요. 이 수치는 그 구역 전체의 평균입니다. 빛의 감소만으로 쇠퇴나 원인을 단정하지 않습니다.` } : { title:d ? `${d.name}에서 차이를 확인합니다` : '평균 안의 장소를 확인합니다', body:d ? `이 판에서는 전체 평균의 증가와 구역 평균의 감소가 동시에 확인되는 사례를 고르지 못했습니다. 실제로 확인된 ${d.name}의 변화는 ${pct(districtValue.percent_change,true)}입니다. 평균과 장소를 같은 방향이라고 가정하지 않고, 경계와 수치를 함께 읽습니다.` : '지도의 구역을 선택해 각 장소의 실제 값을 확인합니다. 자료가 보여 주지 않는 반례는 만들어 넣지 않습니다.' },
-      { title:'같은 시선에서, 두 밤을 다시 봅니다', body:`왼쪽 A는 ${first}, 오른쪽 B는 ${latest}의 실제 관측입니다. 두 표면은 같은 카메라로 움직입니다. 작은 화면에서는 A가 위에 놓입니다. 두 시점을 바꾸거나 다른 구역을 선택하며 질문을 이어가세요. 관측 범위를 켜면 보이지 않았던 자리와 작은 차이의 비율도 확인할 수 있습니다.` }
-    ];
-    const chapter = chapters[state.guide];
+    const r = state.data.regions.find((item) => item.id === state.guideTarget.region);
+    const chapter = state.guideTarget.chapters[state.guide];
     $('guide-step-count').textContent = `0${state.guide+1} / 04 · ${label(r)}`;
     $('guide-step-title').textContent = chapter.title; $('guide-step-body').textContent = chapter.body;
     $('guide-prev').disabled = state.guide === 0; $('guide-next').textContent = state.guide === 3 ? '단일 감상으로 이어 보기' : '다음 장면';
@@ -400,6 +419,7 @@
     document.body.classList.toggle('artwork-immersive',state.immersive);
     $('cinema-toggle').setAttribute('aria-pressed',String(state.immersive));
     $('cinema-toggle').textContent = state.immersive ? '화면 나가기' : '화면 채우기';
+    if (state.immersive) immersiveFocus.activate(); else immersiveFocus.deactivate();
     if (!state.immersive) $('artwork').style.removeProperty('--immersive-canvas-height');
     fitImmersiveCanvas();
   }
@@ -533,6 +553,7 @@
     $('year-slider').max = String(data.years.length - 1); $('year-ticks').replaceChildren();
     data.years.forEach((y, i) => { const b = el('button', '', periodLabel(y)); b.type = 'button'; b.dataset.yearIndex = String(i); b.setAttribute('aria-label', `${periodName(y)} 관측 보기`); b.addEventListener('click', () => setYear(i)); $('year-ticks').append(b); });
     $('load-state').hidden = true; $('load-error').hidden = true; $('timeline').hidden = false; $('artwork').setAttribute('aria-busy', 'false');
+    $('start-guide').disabled = false; $('regional-guide').disabled = false;
     configureEdition(); updateMetadata(); render();
     if (refreshing) { $('update-notice').hidden = false; $('update-notice').textContent = `${periodName(data.years.at(-1))}까지의 검증된 관측으로 작품이 갱신되었습니다.`; announce($('update-notice').textContent); }
   }
@@ -554,6 +575,7 @@
   }
   $('start-guide').setAttribute('aria-controls','guided-story');
   $('start-guide').addEventListener('click', () => { state.guideTarget = null; setGuide(0); });
+  $('regional-guide').addEventListener('click', () => { state.guideTarget = null; setGuide(0); });
   $('guide-prev').addEventListener('click', () => setGuide(state.guide-1));
   $('guide-next').addEventListener('click', () => { if (state.guide === 3) { toggleComparison(); $('compare-toggle').focus({preventScroll:true}); announce('안내가 끝났습니다. 한 작품으로 돌아왔습니다. 비교는 언제든 다시 켤 수 있습니다.'); } else setGuide(state.guide+1); });
   $('guide-exit').addEventListener('click', () => { if (state.compare) toggleComparison(); else leaveGuide(); $('compare-toggle').focus({preventScroll:true}); announce('자유 감상으로 전환했습니다. 비교는 필요할 때 켤 수 있습니다.'); });
@@ -578,7 +600,9 @@
   $('reveal-change').addEventListener('click', () => setMode(state.mode === 'absolute' ? 'change' : 'absolute', true));
   $('district-select').addEventListener('change', (e) => selectDistrict(e.target.value));
   $('reset-view').addEventListener('click', () => { leaveGuide(); state.district = null; state.zoom = false; pendingFocus = null; if (viewerReady) { viewer.select(null); viewer.reset(); } renderDetail(); });
-  $('show-markers').addEventListener('change', (e) => { $('hotspots').hidden = !e.target.checked; viewer?.setMarkersVisible(e.target.checked); });
+  $('show-markers').addEventListener('change', syncMarkers);
+  $('retry-map').addEventListener('click', retryMap);
+  window.addEventListener('online', () => { if (!document.hidden && state.region !== 'all' && !$('retry-map').hidden && !$('retry-map').disabled) retryMap(); });
   $('year-slider').addEventListener('input', (e) => { if (state.data) setYear(e.target.value); });
   $('play-years').addEventListener('click', playYears); $('retry-load').addEventListener('click', loadData);
   $('single-image').addEventListener('error', () => { $('single-image-error').hidden = viewerReady; });

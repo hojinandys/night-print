@@ -37,6 +37,11 @@ jobs:
         run: python pipeline/update.py check --github-output "$GITHUB_OUTPUT"
       - name: Test publication, 3D completeness and failure recovery
         run: python -m unittest discover -s tests -p test_update.py -v
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Test regional stories and recoverable observation loading
+        run: node --test tests/*.mjs
       - name: Test observation archive and linked-map validation
         run: |
           python -m unittest discover -s tests -p test_edition_history.py -v

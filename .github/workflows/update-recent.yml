@@ -40,6 +40,11 @@ jobs:
         run: python pipeline/build_recent.py plan --github-output "$GITHUB_OUTPUT"
       - name: Test monthly publication and incomplete 3D rejection
         run: python -m unittest discover -s tests -p test_build_recent.py -v
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Test regional stories and recoverable observation loading
+        run: node --test tests/*.mjs
       - name: Test observation archive and linked-map validation
         run: |
           python -m unittest discover -s tests -p test_edition_history.py -v
