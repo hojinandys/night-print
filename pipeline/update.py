@@ -79,7 +79,9 @@ def update_lock(path):
     finally:path.unlink(missing_ok=True)
 
 VIEWER_FILES=('viewer3d.js','vendor/three.module.js','vendor/three.core.js',
-              'vendor/OrbitControls.js','vendor/RoomEnvironment.js','vendor/THREE-LICENSE.txt')
+              'vendor/OrbitControls.js','vendor/RoomEnvironment.js',
+              'vendor/LineSegments2.js','vendor/LineSegmentsGeometry.js','vendor/LineMaterial.js',
+              'vendor/THREE-LICENSE.txt')
 
 def copy_interactive_viewer(source,destination):
     """Copy the same browser renderer; never copy another edition's geometry."""

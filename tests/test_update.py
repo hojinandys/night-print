@@ -98,10 +98,11 @@ class UpdateTests(unittest.TestCase):
             validator.assert_called_once_with(new,expected_years=[2015,2016])
 
     def test_missing_vendor_blocks_3d_publication(self):
-        with tempfile.TemporaryDirectory() as d:
-            d=Path(d);fake_site(d/'stage');interactive_files(d/'stage')
-            (d/'stage/vendor/OrbitControls.js').unlink()
-            with self.assertRaisesRegex(ValueError,'dependency'):update.validate_site(d/'stage')
+        for module in ('OrbitControls.js','LineSegments2.js','LineSegmentsGeometry.js','LineMaterial.js'):
+            with self.subTest(module=module), tempfile.TemporaryDirectory() as d:
+                d=Path(d);fake_site(d/'stage');interactive_files(d/'stage')
+                (d/'stage/vendor'/module).unlink()
+                with self.assertRaisesRegex(ValueError,'dependency'):update.validate_site(d/'stage')
 
     def test_viewer_cannot_silently_publish_without_3d_manifest(self):
         with tempfile.TemporaryDirectory() as d:

@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
+import { LineSegments2 } from './vendor/LineSegments2.js';
+import { LineSegmentsGeometry } from './vendor/LineSegmentsGeometry.js';
+import { LineMaterial } from './vendor/LineMaterial.js';
 
 // Three.js 0.187.0, distributed locally under the included MIT license.
 // Geometry packets preserve the original Blender display geometry; values are never inferred from images.
@@ -60,8 +63,8 @@ function charcoalGround() {
     gradient.addColorStop(0, color); gradient.addColorStop(1, 'rgba(0,0,0,0)');
     context.fillStyle = gradient; context.fillRect(0, 0, 1024, 1024);
   };
-  lightPool(-7, -3, 23, 'rgba(42,26,16,0.38)');
-  lightPool(6, 5, 24, 'rgba(18,33,49,0.35)');
+  lightPool(-5, -9, 14, 'rgba(88,62,37,0.78)');
+  lightPool(11, 2, 16, 'rgba(64,86,116,0.86)');
   const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
 }
@@ -74,8 +77,8 @@ export class ReliefViewer {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.AgXToneMapping; this.renderer.toneMappingExposure = .95;
-    this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.toneMapping = THREE.AgXToneMapping; this.renderer.toneMappingExposure = 1.24;
+    this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.VSMShadowMap;
     this.canvas = this.renderer.domElement; this.canvas.tabIndex = 0;
     this.canvas.setAttribute('role', 'img'); this.canvas.setAttribute('aria-label', '회전 가능한 실제 야간광 입체. 방향키 회전, 더하기와 빼기 확대, R 원래 시점.');
     this.host.append(this.canvas);
@@ -92,19 +95,22 @@ export class ReliefViewer {
     this.controls.addEventListener('start', () => { this.transition = null; this.onMove?.(); });
     const pmrem = new THREE.PMREMGenerator(this.renderer), room = new RoomEnvironment();
     this.environment = pmrem.fromScene(room, .04).texture; this.scene.environment = this.environment; room.dispose(); pmrem.dispose();
-    // RoomEnvironment contains very bright white studio panels. Keep their
-    // reflection faint so the sculpture retains its original dark bronze.
-    this.scene.environmentIntensity = .025;
-    this.scene.add(new THREE.HemisphereLight(0x6e87aa, 0x19120c, .35));
+    // Broad studio reflections reveal the relief without lifting the ground.
+    // Each material has its own reflection strength; the charcoal stage is unlit.
+    this.scene.environmentIntensity = .09;
+    this.scene.add(new THREE.HemisphereLight(0xaabbd0, 0x34281c, .55));
     const light = (color, intensity, position, shadows = false) => {
       const item = new THREE.DirectionalLight(color, intensity); item.position.set(...position); item.castShadow = shadows;
-      if (shadows) { item.shadow.mapSize.set(1024, 1024); Object.assign(item.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: .1, far: 40 }); item.shadow.bias = -.0003; item.shadow.normalBias = .025; item.shadow.radius = 10; }
+      if (shadows) { item.shadow.mapSize.set(1024, 1024); Object.assign(item.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: .1, far: 40 }); item.shadow.bias = -.0003; item.shadow.normalBias = .025; item.shadow.radius = 8; item.shadow.blurSamples = 12; }
       this.scene.add(item); this.scene.add(item.target);
     };
-    light(0xffb06e, 2.4, [-5, -1, 9], true); light(0x6b9cff, 1.3, [2, 7, 8]); light(0xffcc94, 1.6, [6, 1, 5]);
+    light(0xffd4a3, 3.3, [-5, -1, 9], true);
+    light(0x97bbef, 2.7, [2, 7, 8]);
+    light(0xffd9a6, 2.5, [6, 1, 5]);
+    light(0xe8edf5, .9, [-1, -8, 6]);
     this.fixed = new THREE.Group(); this.dynamic = new THREE.Group(); this.scene.add(this.fixed, this.dynamic);
     this.floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshBasicMaterial({ map: charcoalGround(), toneMapped: false, dithering: true }));
-    this.floorShadow = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ color: 0x000000, opacity: .26, depthWrite: false }));
+    this.floorShadow = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ color: 0x000000, opacity: .42, depthWrite: false }));
     this.floorShadow.receiveShadow = true; this.scene.add(this.floor, this.floorShadow);
     this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(this.host);
     this.canvas.addEventListener('keydown', (event) => this.key(event));
@@ -151,17 +157,22 @@ export class ReliefViewer {
     if (frame.triangles) geometry.setIndex(new THREE.BufferAttribute(frame.triangles, 1));
     else { const triangles = []; for (let i = 0; i < base.faces.length; i += 4) triangles.push(base.faces[i], base.faces[i + 1], base.faces[i + 2], base.faces[i], base.faces[i + 2], base.faces[i + 3]); geometry.setIndex(triangles); }
     if (frame.normals) geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(frame.normals), 3)); else geometry.computeVertexNormals();
-    const body = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: new THREE.Color(.028, .019, .012), metalness: .72, roughness: .4, envMap: this.environment, envMapIntensity: .025, side: THREE.DoubleSide }));
+    const body = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: new THREE.Color(.04, .027, .016), metalness: .68, roughness: .34, envMap: this.environment, envMapIntensity: .09, side: THREE.DoubleSide }));
     body.castShadow = true; body.receiveShadow = true; this.dynamic.add(body);
-    if (frame.p && frame.n) {
-      const contourGeometry = lineGeometry(frame.p, frame.n, 3), colors = []; let line = 0;
+    if (frame.p?.length && frame.n?.length) {
+      // Preserve the observed contour centerlines; world-space width gives them
+      // the fine filament volume of the original Blender curves while orbiting.
+      const centerlines = lineGeometry(frame.p, frame.n, 3);
+      const contourGeometry = new LineSegmentsGeometry().setPositions(centerlines.getAttribute('position').array);
+      centerlines.dispose();
+      const colors = []; let line = 0;
       for (const count of frame.n) {
         const level = frame.levels[line++], t = Math.min(1, Math.abs(level) / 4.2);
-        const color = level < 0 ? [.16 + .5 * t, .38 + .48 * t, .64 + .32 * t] : [.4 + .5 * t, .16 + .65 * t, .045 + .51 * t];
+        const color = level < 0 ? [.28 + .42 * t, .55 + .37 * t, .9 + .1 * t] : [.62 + .35 * t, .31 + .59 * t, .095 + .60 * t];
         for (let i = 1; i < count; i++) colors.push(...color, ...color);
       }
-      contourGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-      const contours = new THREE.LineSegments(contourGeometry, new THREE.LineBasicMaterial({ vertexColors: true, toneMapped: false, transparent: true, opacity: .95, depthWrite: false }));
+      contourGeometry.setColors(colors);
+      const contours = new LineSegments2(contourGeometry, new LineMaterial({ vertexColors: true, worldUnits: true, linewidth: .018, alphaToCoverage: true, toneMapped: false, depthWrite: false }));
       contours.renderOrder = 2; this.dynamic.add(contours);
     }
     this.makeMarkers(region); this.resize(); if (regionChanged) this.reset(false); this.dirty = true; return true;
@@ -175,7 +186,7 @@ export class ReliefViewer {
       const geometry = new THREE.BufferGeometry();
       if (base.base_positions) { geometry.setAttribute('position', new THREE.Float32BufferAttribute(base.base_positions, 3)); if (base.base_triangles) geometry.setIndex(new THREE.BufferAttribute(base.base_triangles, 1)); if (base.base_normals) geometry.setAttribute('normal', new THREE.Float32BufferAttribute(base.base_normals, 3)); else geometry.computeVertexNormals(); }
       else { const positions = []; for (let i = 0; i < base.base.length; i += 2) positions.push(base.base[i], base.base[i + 1], -.065); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals(); }
-      const plate = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: new THREE.Color(.017, .022, .029), metalness: .45, roughness: .62, envMap: this.environment, envMapIntensity: .012, flatShading: true, side: THREE.DoubleSide })); plate.castShadow = true; plate.receiveShadow = true; this.fixed.add(plate);
+      const plate = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: new THREE.Color(.017, .022, .029), metalness: .65, roughness: .43, envMap: this.environment, envMapIntensity: .025, flatShading: true, side: THREE.DoubleSide })); plate.castShadow = true; plate.receiveShadow = true; this.fixed.add(plate);
     }
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     const extent = base.base || base.xy;
