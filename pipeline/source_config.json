@@ -1,0 +1,156 @@
+{
+  "dataset_id": "62620",
+  "iso3": "KOR",
+  "doi": "10.5258/SOTON/WP00772",
+  "api": "https://hub.worldpop.org/rest/data/covariates/G2_NT_lights?iso3=KOR",
+  "file_prefix": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/",
+  "baseline_year": 2015,
+  "initial_last_year": 2023,
+  "boundary_date": "2023-12-31",
+  "downloads": [
+    {
+      "year": 2015,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2015_100m_v1.tif",
+      "bytes": 55090666,
+      "sha256": "c1d17e0c0194c37a60fa1a7058cb9ee8c7ad853594c53fdb335e665d0b0363d5",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    },
+    {
+      "year": 2016,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2016_100m_v1.tif",
+      "bytes": 55411892,
+      "sha256": "7c4933858423b038fcbf1a8d4ff09aa14d284495ecfd64723012dafc34917fbb",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    },
+    {
+      "year": 2017,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2017_100m_v1.tif",
+      "bytes": 56263418,
+      "sha256": "398b8b4827c6eeb12fe6996fa895a5b042cc312cb227f8c7edf101dc2d390cda",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    },
+    {
+      "year": 2018,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2018_100m_v1.tif",
+      "bytes": 56395198,
+      "sha256": "95d0f94d8b7b84c43221811d6cafa14c2eb6ffccbad70a1e98de2dd017924050",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    },
+    {
+      "year": 2019,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2019_100m_v1.tif",
+      "bytes": 56186254,
+      "sha256": "f8236f951d9fdb291f7bfb43af2da00494264c677dce79fbb27e578f8d4fe983",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    },
+    {
+      "year": 2020,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2020_100m_v1.tif",
+      "bytes": 56209558,
+      "sha256": "8685e0e56736996479ec86049edea32ec5d38c768742e8b5d48bcbbcd37c0e8a",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    },
+    {
+      "year": 2021,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2021_100m_v1.tif",
+      "bytes": 56835256,
+      "sha256": "259a1a0744fe06a27529ca1eee26b480e7b306b8920b75a6304bc6b9fea12968",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    },
+    {
+      "year": 2022,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2022_100m_v1.tif",
+      "bytes": 57737364,
+      "sha256": "fdba8465571770642151ca6f8e91c087ea87b1e49ae386688a71a82d189b9e1b",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    },
+    {
+      "year": 2023,
+      "url": "https://data.worldpop.org/GIS/Covariates/Global_2015_2030/KOR/VIIRS/v1/nvf/kor_viirs_nvf_2023_100m_v1.tif",
+      "bytes": 57048378,
+      "sha256": "5f5079d25e88847b6af796675d58cd3804ff59dd22694154904bafdc5c03955d",
+      "shape": [
+        6603,
+        7597
+      ],
+      "bounds": [
+        124.60999878156002,
+        33.11333353688,
+        130.94083208957002,
+        38.61583351487
+      ]
+    }
+  ]
+}

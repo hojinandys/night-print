@@ -1,0 +1,11 @@
+{
+  "frames_verified": 54,
+  "frame_bytes": 7244026,
+  "districts_verified": 43,
+  "region_and_district_years": 9,
+  "camera_projection_checked_against_saved_blender_scenes": true,
+  "max_normalized_projection_error": 2.9744374668849716e-07,
+  "equivalent_max_pixel_error_1920": 0.0005710919936419145,
+  "original_camera_and_art_preserved": true,
+  "new_observations_invented": false
+}

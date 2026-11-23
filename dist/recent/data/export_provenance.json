@@ -1,0 +1,117 @@
+{
+  "created_utc": "2026-11-23T10:06:23.653139+00:00",
+  "observed_years": [
+    2025,
+    2026
+  ],
+  "source_facts_sha256": "64923d057a5d3e0ac32f9b8b51c9f0a7142883db9d6de14785e378148282356b",
+  "frames": [
+    {
+      "url": "assets/frames/seoul/absolute/2025.webp",
+      "bytes": 176994,
+      "source_render_sha256": "d3d1a2456072b5731414e1c942f1e230ccabca991736b39eb77b288b1157c8da",
+      "sha256": "36ec6ca0e4752c47ed73fc9ce16949db1bb2019b7dd8619fe21cedabb3e5c8f8"
+    },
+    {
+      "url": "assets/frames/seoul/absolute/2026.webp",
+      "bytes": 179420,
+      "source_render_sha256": "5c7610c2e496ef17328f755cd782f4c07fe40512ff7e116de7e17b0c69e8308f",
+      "sha256": "0fae2b390bee28a047546426aeadf0f3cd5c5b2b02cc42a90f6b33f1d5c8565d"
+    },
+    {
+      "url": "assets/frames/seoul/change/2025.webp",
+      "bytes": 29418,
+      "source_render_sha256": "386faabab59e5363404a4d5cd18798c54b31249194337cddc9d3354d55bcb68f",
+      "sha256": "c9c53c31dd7e227e0a6223925cc31bebee28374a76b19700382b43e444adbbaa"
+    },
+    {
+      "url": "assets/frames/seoul/change/2026.webp",
+      "bytes": 196576,
+      "source_render_sha256": "1dafeae222bbe632d074e8e748326f4450e00ebba6b476f929b1d076094524d7",
+      "sha256": "a23625eb78d7331529f4def50141619d637637a25aca6cd185a835de213a1f90"
+    },
+    {
+      "url": "assets/frames/busan/absolute/2025.webp",
+      "bytes": 170098,
+      "source_render_sha256": "8a22a768f94c943b88c1baabda03372d191c7e2e3862a93f2dc3b1716e8a7639",
+      "sha256": "d55021b04bd2008415b407253f1e4f4c00e80ea1ebdd5fd4e2914a9c085d7a61"
+    },
+    {
+      "url": "assets/frames/busan/absolute/2026.webp",
+      "bytes": 172620,
+      "source_render_sha256": "572cb61c258bf440d3acdb1c3c71859b26eb0e21ffac19c845b86dd58b467988",
+      "sha256": "e74c8e0acff02fbc11ef53506c17a7e39bec4980362432612505c87b8da070a2"
+    },
+    {
+      "url": "assets/frames/busan/change/2025.webp",
+      "bytes": 36454,
+      "source_render_sha256": "d7583fe68f36209f57b9ea828640cee216b5379af69e98fdec20235f75a13a0d",
+      "sha256": "e4ce5d81ea0b73aeb0631bffd6fdc0a4119f4b15d0d8a3f84ecd251e94cf8584"
+    },
+    {
+      "url": "assets/frames/busan/change/2026.webp",
+      "bytes": 181388,
+      "source_render_sha256": "deb3b41347ce22185ec2d73d15d21cd2d82bde427d6c604c75bfc33c95287c88",
+      "sha256": "c7a36391a556c3cd27163e2728028cb4dd94e991bd5b3b843dcf4b2e6b9eff4d"
+    },
+    {
+      "url": "assets/frames/jeju/absolute/2025.webp",
+      "bytes": 124184,
+      "source_render_sha256": "a101f3d14541c72c58b94132ebb002ed9f745d2c8ecd08d449e4b4c72bee741b",
+      "sha256": "23853ef18da06f8d1d888b4710cf4138a20530106f7f193f2485f25d7cb502a7"
+    },
+    {
+      "url": "assets/frames/jeju/absolute/2026.webp",
+      "bytes": 125806,
+      "source_render_sha256": "e7abedf5f72e7cdfe82e466447711066603adbb849bcc477cd415caa3fe7be1f",
+      "sha256": "293a7ef2d09c3b562c3451ec7d374e9b248c90f31454728c6e9a2be1b7416b69"
+    },
+    {
+      "url": "assets/frames/jeju/change/2025.webp",
+      "bytes": 25916,
+      "source_render_sha256": "0742af5cec6e3eb818c2398882cda38918a751b0550da22b280ed3c9f9dee1df",
+      "sha256": "52b40d4bf7b4fd14d3b5239179b60b7a93f4ac195b01118a5baca728c0780eb6"
+    },
+    {
+      "url": "assets/frames/jeju/change/2026.webp",
+      "bytes": 99732,
+      "source_render_sha256": "b846d2839dbdd6a8d0755c38bb0d64485109c3920379aadfb687654c8b4ab8a5",
+      "sha256": "a1307d659225a95485f05588f422be7ad6f77a010994a05f08d7ee0e8347c4a3"
+    }
+  ],
+  "frame_count": 12,
+  "total_frame_bytes": 1518606,
+  "regions": 3,
+  "districts": 43,
+  "independent_values": "All region and district monthly means verified against saved facts.",
+  "camera": {
+    "position": [
+      11.0,
+      -16.0,
+      19.0
+    ],
+    "ortho_width": 18.5,
+    "aspect": 1.7777777777777777,
+    "shift_y": 0.015
+  },
+  "hotspot_basis": "Administrative representative point on fixed z=0 reference plane, not clicked pixel radiance.",
+  "period": {
+    "kind": "monthly_same_month",
+    "month": 10,
+    "labels": {
+      "2025": "2025.10",
+      "2026": "2026.10"
+    },
+    "start_dates": [
+      "2025-10-01",
+      "2026-10-01"
+    ],
+    "end_dates": [
+      "2025-10-31",
+      "2026-10-31"
+    ],
+    "baseline_moves": true,
+    "comparison_note": "새 월이 발행되면 비교 기준도 전년 같은 달로 함께 이동합니다. 서로 다른 월간 판의 증감률은 같은 기준의 연속 추세가 아닙니다."
+  },
+  "source_doi": "10.5067/VIIRS/VJ146A3.002"
+}

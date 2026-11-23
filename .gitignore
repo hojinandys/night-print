@@ -1,0 +1,11 @@
+.runtime/
+/cache/
+/data/
+/artwork/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.blend1
+*.zip
+*.tar.xz

@@ -1,0 +1,93 @@
+# 밤의 지문 — 평균이 지운 자리
+
+**평균이 밝아지면, 모든 자리도 함께 밝아질까?**
+
+서울·부산·제주의 공개 야간광을 떠 있는 빛의 표면으로 바꾼 데이터 아트입니다. 평균의 증가를 먼저 확인하고, 같은 위치의 처음 값을 빼서 그 안에 남은 증가와 감소를 함께 봅니다. 금빛·푸른빛 등고선과 입체적인 배경은 기존 영상 작품의 디자인을 유지합니다.
+
+두 관측 판을 구분해 감상합니다. **장기 변화**는 WorldPop / EOG의 2015–2023년 연간 관측이고, **최근 관측**은 NASA Black Marble의 2025년 10월과 2026년 10월입니다. 2026-11-23에 한국 타일에서 확인한 최신 완료 월이 2026년 10월입니다. 서로 다른 제품의 값을 하나의 시계열로 이어 붙이지 않습니다.
+
+저장소: [hojinandys/night-print](https://github.com/hojinandys/night-print). 웹 주소: [밤의 지문](https://hojinandys.github.io/night-print/) · [최근 관측](https://hojinandys.github.io/night-print/recent/). 배포 실행 결과는 저장소 Actions에서 확인할 수 있습니다.
+
+## 감상하는 세 단계
+
+1. **평균을 본다.** 세 지역을 같은 연도로 비교하며 평균 밝기가 어떻게 움직였는지 봅니다.
+2. **처음의 빛을 뺀다.** 버튼을 누르면 각 위치의 2015년 값을 뺀 표면으로 전환됩니다. 금빛은 증가, 푸른빛은 감소입니다.
+3. **자리 안으로 들어간다.** 지역과 구·군·시의 표시를 누르면 확대되고, 실제 변화·연도별 평균·관측 범위가 나타납니다. 지점 정보는 선택 구역 전체의 집계이며 한 픽셀의 측정값이 아닙니다.
+
+연도 슬라이더와 재생 버튼으로 공개된 과거 관측을 살펴볼 수 있습니다. 선 한 줄은 한 해가 아니라 같은 표시 높이의 등고선입니다.
+
+최근 판은 지난해 같은 달의 값을 뺍니다. 이번 자료에서 서울·부산·제주의 평균은 각각 약 3.8%·11.8%·9.0% 증가했지만, 공통 관측 영역 안에서 값이 낮아진 면적도 약 40.3%·32.7%·38.6% 남습니다. 이 면적 비율은 작은 음수도 포함하며 측정 오차를 넘는 유의한 감소 비율이 아닙니다. 특히 제주의 감소는 작은 값 차이가 많습니다. 같은 달 비교로 계절 차이를 줄여도 기상·관측 품질의 영향이 없어지거나 원인이 입증되는 것은 아닙니다.
+
+## 로컬에서 보기
+
+저장소 폴더에서 실행합니다. 이미 포함된 웹 작품을 보는 데 데이터 다운로드나 Blender는 필요하지 않습니다.
+
+```sh
+python3 -m http.server 8000 --directory dist
+```
+
+브라우저에서 [http://localhost:8000](http://localhost:8000)을 엽니다. Windows에서 `python3` 대신 `python` 명령을 사용하는 환경은 그에 맞춰 실행합니다. `index.html`을 직접 여는 대신 위 주소를 사용해야 작품의 자료 파일을 정상적으로 읽습니다.
+
+## 새로운 관측이 들어오면
+
+`.github/workflows/update-art.yml`에는 공식 자료 확인 → 검증 → 입체 재생성 → 웹 검증 → GitHub Pages 반영 흐름을 담았습니다. GitHub 연결과 Pages 설정을 마친 뒤, `main` 변경·수동 실행·매주 월요일 12:17(KST) 일정으로 실행하도록 구성되어 있습니다.
+
+- 새 연도가 없으면 작품은 유지하고 확인 시각만 기록합니다.
+- 같은 제품의 연도가 추가되면 자료를 수집하고 세 지역을 같은 규칙으로 다시 계산합니다.
+- 같은 판에 포함된 모든 연도의 공통 관측 영역을 사용합니다. 새 연도로 공통 영역이 달라지면 이전 연도도 그 영역에서 다시 계산합니다.
+- 제품·격자 규격 변경, 연도 누락, 다운로드·렌더 검증 실패 시 기존 작품을 교체하지 않습니다.
+- 다른 제품이나 월간 자료를 이 연간 시계열의 뒤에 그대로 붙이지 않습니다.
+
+자동 갱신은 작품을 빠르게 움직이게 하는 장치가 아니라, 새로운 관측에도 **같은 질문과 비교 기준을 유지하는 제작 방식**입니다.
+
+최근 판은 별도 `update-recent.yml`이 매주 화요일 12:37(KST)에 NASA의 완료된 월과 전년 동월을 확인합니다. 새 월 또는 공식 재처리 파일이 생기면 품질 검증·500m 공통 영역 집계·같은 입체 렌더·화면 검증을 거쳐 `dist/recent`만 교체합니다. 새 월에는 비교 기준도 전년 같은 달로 이동하므로, 각 판의 증감률을 같은 기준의 장기 추세로 연결하지 않습니다. 확인 시각과 관측 시각은 별도로 표시합니다.
+
+자동 다운로드의 `EARTHDATA_TOKEN`은 저장소 **Settings → Secrets and variables → Actions**에만 저장합니다. 공개 소스에 쓰지 않습니다. 이번에 연결한 키의 만료일은 **2027-01-22**이며, 만료 전에 NASA에서 갱신하고 같은 이름의 비밀값을 교체해야 합니다. 키가 없거나 만료되면 기존 작품을 보존합니다. GitHub의 공개 저장소 정기 실행은 60일간 활동이 없으면 중지될 수 있으므로 Actions 상태를 확인합니다. 수동 실행으로도 같은 검증 절차를 시작할 수 있습니다.
+
+NASA 자료를 직접 확인·가져오려면 다음 명령을 사용합니다. 로그인해 브라우저에서 받은 원본을 `--import-file`로 검사하는 방법도 지원합니다.
+
+```sh
+python pipeline/nasa_observations.py --check
+python pipeline/nasa_observations.py --download --token-file .runtime/nasa/earthdata_token
+python pipeline/build_recent.py plan
+python pipeline/build_recent.py build --blender "/실제/Blender/실행파일/경로"
+python pipeline/build_recent.py validate
+```
+
+원본 HDF5·검사 기록·이전 판은 공개 제외 경로 `.runtime`에 저장합니다. HDF5 원본 파일은 대용량이므로 GitHub에 포함하지 않으며, 공개한 원본 URL과 SHA256으로 다시 검증합니다. NASA의 월간 합성값은 눈 없는 관측 중 품질 0·관측수 4회 이상을 사용합니다. 보충값·불량값·결측을 빛 0으로 바꾸지 않습니다.
+
+직접 자료 확인과 갱신을 실행하려면 Python 의존성과 Blender 4.4가 필요합니다.
+
+```sh
+python -m pip install -r requirements.txt
+python pipeline/update.py check
+python pipeline/update.py build --blender "/실제/Blender/실행파일/경로"
+python pipeline/update.py validate
+python -m unittest discover -s tests -v
+```
+
+`check`는 공식 연도 목록만 확인합니다. `build`는 필요한 경우에만 수집·재계산·렌더를 수행하므로 작업 시간이 길어질 수 있습니다. 작업 및 검증 이력은 `.runtime`에 기록되며, 새 판 검증을 마친 뒤에만 `dist`를 교체합니다.
+
+## 과거 재현과 새 관측은 다릅니다
+
+`replay`는 이미 공개된 실제 연도를 잘라 갱신 과정을 검증하는 기능입니다. 예를 들어 기존 제출본의 원자료로 2022년까지의 판을 별도로 만들 수 있습니다.
+
+```sh
+python pipeline/update.py replay --through 2022 --source-project "../night-print-regions" --blender "/실제/Blender/실행파일/경로"
+```
+
+기본 결과는 `.runtime/replay/2022`에 분리해 저장합니다. 화면과 기록에 과거 자료 재현임을 표시하며, 새로운 관측이 방금 도착한 것으로 설명하지 않습니다. 웹의 연도 재생 역시 과거 관측을 순서대로 감상하는 기능입니다.
+
+## 자료와 읽기의 범위
+
+- [WorldPop 공개 자료](https://hub.worldpop.org/geodata/summary?id=62620) · [DOI](https://doi.org/10.5258/SOTON/WP00772): EOG 기반 연평균 복사휘도, 단위 `nW/cm²/sr`, CC BY 4.0.
+- [EOG Annual VNL](https://eogdata.mines.edu/products/vnl/): 원 야간광 제품과 방법.
+- [NASA Black Marble VJ146A3 v002](https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/VJ146A3/) · [DOI](https://doi.org/10.5067/VIIRS/VJ146A3.002): NOAA-20 VIIRS, 15각초 월간 달빛·대기 보정 합성자료. 이번 최근 판은 2025-10과 2026-10의 한국 타일 h30v05를 사용합니다. 무료 Earthdata 인증이 필요합니다.
+- [SGIS 경계 가공 자료](https://github.com/vuski/admdongkor/tree/master/ver20231231): 2023-12-31 고정 경계. SGIS 원자료 공공누리 제1유형, vuski/admdongkor 가공본 CC BY 4.0.
+- 나눔고딕: SIL Open Font License, `dist/assets/fonts/OFL.txt` 포함.
+
+원자료를 500m 격자로 집계하고 경계 교차 면적으로 가중합니다. 100m 파일 간격을 독립적인 100m 관측 정밀도로 해석하지 않습니다. 관측이 없는 곳은 0으로 만들지 않으며, 경계 셀에는 경계 밖 값이 섞일 수 있습니다. 지역별 화면 배율은 다르고, 높이에는 공통 비선형 변환을 적용합니다.
+
+낮아진 면적은 작은 음수까지 포함한 **값의 차이 < 0** 기준입니다. 통계적으로 유의한 감소나 도시 쇠퇴를 뜻하지 않습니다. 야간광만으로 인구·경제·관광·정책 효과 또는 변화의 원인을 단정하지 않습니다. 세 지역은 공간 형태가 다른 대비 사례이며 전국 대표 표본이 아닙니다.
+
+성호진 · 콘텐츠프로그래밍 데이터 아트. 자료 탐색·구현·문서·검산에 AI를 활용했습니다.
