@@ -69,7 +69,7 @@ function charcoalGround() {
 export class ReliefViewer {
   constructor(host, { onSelect, onError, onMove } = {}) {
     this.host = host; this.onSelect = onSelect; this.onError = onError; this.onMove = onMove;
-    this.active = true; this.dirty = true; this.generation = 0; this.markersVisible = true; this.markerNodes = [];
+    this.active = true; this.dirty = true; this.contextLost = false; this.generation = 0; this.markersVisible = true; this.markerNodes = [];
     this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -108,7 +108,7 @@ export class ReliefViewer {
     this.floorShadow.receiveShadow = true; this.scene.add(this.floor, this.floorShadow);
     this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(this.host);
     this.canvas.addEventListener('keydown', (event) => this.key(event));
-    this.canvas.addEventListener('webglcontextlost', (event) => { event.preventDefault(); this.active = false; this.onError?.(new Error('WebGL context lost')); });
+    this.canvas.addEventListener('webglcontextlost', (event) => { event.preventDefault(); this.contextLost = true; this.active = false; ++this.generation; this.onError?.(new Error('WebGL context lost')); });
     this.renderer.setAnimationLoop((time) => {
       if (!this.active || document.hidden) return;
       if (this.transition) {
@@ -132,11 +132,13 @@ export class ReliefViewer {
     this.camera.updateProjectionMatrix(); this.dirty = true;
   }
   async show(region, year, mode) {
+    if (this.contextLost) throw new Error('Reload required after WebGL context loss');
     const generation = ++this.generation, spec = region.webgl;
     if (!spec) throw new Error('3D geometry not available');
     const frameURL = spec.frames?.[mode]?.find((f) => Number(f.year) === Number(year))?.url;
     if (!frameURL) throw new Error('3D frame unavailable');
     const [base, frame] = await Promise.all([packet(spec.static_url), packet(frameURL)]);
+    if (this.contextLost) throw new Error('Reload required after WebGL context loss');
     if (generation !== this.generation) return false;
     if (!base.xy || !frame.z || frame.z.length * 2 !== base.xy.length) throw new Error('Geometry dimensions do not match');
     const regionChanged = this.regionId !== region.id, modeChanged = this.mode !== mode;
@@ -226,5 +228,5 @@ export class ReliefViewer {
     if (action) { event.preventDefault(); this.action(action); }
   }
   setMarkersVisible(visible) { this.markersVisible = visible; this.markerLayer.hidden = !visible; }
-  setActive(active) { this.active = active; if (active) { this.resize(); this.dirty = true; } }
+  setActive(active) { this.active = active && !this.contextLost; if (this.active) { this.resize(); this.dirty = true; } }
 }
