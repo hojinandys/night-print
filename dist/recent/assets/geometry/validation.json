@@ -1,0 +1,154 @@
+{
+  "checked_utc": "2026-11-23T10:21:34.306183+00:00",
+  "validated": true,
+  "frames": 12,
+  "regions": 3,
+  "bytes": 13440194,
+  "source_facts_sha256": "64923d057a5d3e0ac32f9b8b51c9f0a7142883db9d6de14785e378148282356b",
+  "all_source_values_exact": true,
+  "all_blender_vertices_exact": true,
+  "blender_version": "4.4.0",
+  "files": [
+    {
+      "region": "seoul",
+      "kind": "static",
+      "url": "assets/geometry/seoul/static-bf1e06b56281.npg.gz",
+      "sha256": "bf1e06b562810dda060a2be9ced5515be3afff50a54ad0258c55b5a55e2895d3",
+      "bytes": 505327
+    },
+    {
+      "region": "seoul",
+      "mode": "absolute",
+      "year": 2025,
+      "url": "assets/geometry/seoul/absolute/2025-718b49768b0e.npg.gz",
+      "sha256": "718b49768b0ea3c6daa6429e49e78898bd9c3e254563d0bbb2eda4139585a485",
+      "bytes": 652320,
+      "source_values_exact": true,
+      "blender_position_sha256": "abc5ffd3385ae236de0dbf46a8e93ddf4b95b1c24b6b526c86dc833d5275f72b"
+    },
+    {
+      "region": "seoul",
+      "mode": "absolute",
+      "year": 2026,
+      "url": "assets/geometry/seoul/absolute/2026-ac872243f24d.npg.gz",
+      "sha256": "ac872243f24db5a3061bd001a9623fc11ecda1b05e252e0d3391149ce5efbdef",
+      "bytes": 668453,
+      "source_values_exact": true,
+      "blender_position_sha256": "40d4c12fdbf11b1bb0196e97d34bceb7adc3b72bcfd86552d8bf5786bd743bd0"
+    },
+    {
+      "region": "seoul",
+      "mode": "change",
+      "year": 2025,
+      "url": "assets/geometry/seoul/change/2025-05ae80dbe73f.npg.gz",
+      "sha256": "05ae80dbe73f4e6201a768cf4ab943dbd282965590972d6993a05afd34898b30",
+      "bytes": 141171,
+      "source_values_exact": true,
+      "blender_position_sha256": "d384c0ad826a3ba7b5a1dcac2d9acdf0e15f599c8f2e425dcbb0ad13840f6af2"
+    },
+    {
+      "region": "seoul",
+      "mode": "change",
+      "year": 2026,
+      "url": "assets/geometry/seoul/change/2026-5cf4fb1b3388.npg.gz",
+      "sha256": "5cf4fb1b338831efa89c6ebaf4402847fa86b8a68f47cc7bf6be739d5f3d4fa3",
+      "bytes": 1017281,
+      "source_values_exact": true,
+      "blender_position_sha256": "1d5f17703142a6fd6759cde9e7dcda27e39ac3e556ee8dc92e21c82165ee533e"
+    },
+    {
+      "region": "busan",
+      "kind": "static",
+      "url": "assets/geometry/busan/static-ff15f2b070ce.npg.gz",
+      "sha256": "ff15f2b070cec84cd89f0bd878e968bc301397f36735dbad253122d7f5236a0c",
+      "bytes": 584930
+    },
+    {
+      "region": "busan",
+      "mode": "absolute",
+      "year": 2025,
+      "url": "assets/geometry/busan/absolute/2025-c15498709416.npg.gz",
+      "sha256": "c1549870941627865bab62499ef572440b8915ace8a7225a710727bd990c298f",
+      "bytes": 962101,
+      "source_values_exact": true,
+      "blender_position_sha256": "a19db36cb373f0f3825b12ddf688f82da8622a862b6eceaf19385dfd3acb943c"
+    },
+    {
+      "region": "busan",
+      "mode": "absolute",
+      "year": 2026,
+      "url": "assets/geometry/busan/absolute/2026-b5bf86fcd10f.npg.gz",
+      "sha256": "b5bf86fcd10f457092e26abf1b7e76f3fbf56215489af8122f32d374310f9c62",
+      "bytes": 983485,
+      "source_values_exact": true,
+      "blender_position_sha256": "2d6aca7e13a9b0bb5971282863d00385a211adeecf8ed50841a3c98d6d8f9de3"
+    },
+    {
+      "region": "busan",
+      "mode": "change",
+      "year": 2025,
+      "url": "assets/geometry/busan/change/2025-6281354b5b8a.npg.gz",
+      "sha256": "6281354b5b8aff988ca48e78ae77917425cbf7c75301a5f403a2aaf9bfc01e0c",
+      "bytes": 178767,
+      "source_values_exact": true,
+      "blender_position_sha256": "fdd6bdb93af4fa0f454d408d5fe937d79e871a71d1843609917ac3299a6e03cb"
+    },
+    {
+      "region": "busan",
+      "mode": "change",
+      "year": 2026,
+      "url": "assets/geometry/busan/change/2026-218b9270c042.npg.gz",
+      "sha256": "218b9270c042d64ec5ae408f253d114fdf88edd54bc8b37ab1b4482a1b985c2c",
+      "bytes": 1068392,
+      "source_values_exact": true,
+      "blender_position_sha256": "8316e2cc7374fd4717b955fb9c6dc1a2186feeaf4448c41f5e33c21762121ac7"
+    },
+    {
+      "region": "jeju",
+      "kind": "static",
+      "url": "assets/geometry/jeju/static-e21c2478a8b9.npg.gz",
+      "sha256": "e21c2478a8b95a3003b7ed31063a7d6cc34816c2442e3c0f239bf725ab0ce1c5",
+      "bytes": 951403
+    },
+    {
+      "region": "jeju",
+      "mode": "absolute",
+      "year": 2025,
+      "url": "assets/geometry/jeju/absolute/2025-a0b57fbda579.npg.gz",
+      "sha256": "a0b57fbda5796c6926a429c3c4de6c54d1cecdb573d9335b9b8954fc1c6ec3ef",
+      "bytes": 1820760,
+      "source_values_exact": true,
+      "blender_position_sha256": "265981fc8155f7f83dc5ea00b6dcd79c765a1abce8d71382a1561b2353f7672f"
+    },
+    {
+      "region": "jeju",
+      "mode": "absolute",
+      "year": 2026,
+      "url": "assets/geometry/jeju/absolute/2026-141294aa7fd8.npg.gz",
+      "sha256": "141294aa7fd835813381e0afe54ae8b343bfc504be294cf840d79fa84e0f0414",
+      "bytes": 1853432,
+      "source_values_exact": true,
+      "blender_position_sha256": "54155fc5757bf8e481c46b717cb35a7a34638fad1e72fd1a82fbe8b0eb3dc8dc"
+    },
+    {
+      "region": "jeju",
+      "mode": "change",
+      "year": 2025,
+      "url": "assets/geometry/jeju/change/2025-b97983b41934.npg.gz",
+      "sha256": "b97983b419345174558258ac2859daa426f4ec7209f6b0254d3ea8b84648a730",
+      "bytes": 424506,
+      "source_values_exact": true,
+      "blender_position_sha256": "5e1d37f47c9470e21395522ce2d11d175ff86792605932608aedda49a78d07f2"
+    },
+    {
+      "region": "jeju",
+      "mode": "change",
+      "year": 2026,
+      "url": "assets/geometry/jeju/change/2026-d8ca7ca7abaf.npg.gz",
+      "sha256": "d8ca7ca7abaf9cb4a702c6537308567f39f015a6079c1edf4161ab416889bce8",
+      "bytes": 1627866,
+      "source_values_exact": true,
+      "blender_position_sha256": "3da14ba2626412b3150a3dc1b1b592959b7091f7d05b2051caa7a625d1cd7ade"
+    }
+  ]
+}

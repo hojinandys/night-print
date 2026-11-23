@@ -19,7 +19,7 @@ import sys
 import uuid
 
 from nasa_observations import checked_pair, LAYER, NODATA
-from update import ReviewNeeded, update_lock
+from update import ReviewNeeded, update_lock, copy_interactive_viewer, validate_interactive_art
 
 ROOT = Path(__file__).resolve().parents[1]
 PRODUCT_URL = 'https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/VJ146A3/'
@@ -200,6 +200,7 @@ def validate_recent(dist, expected_pair=None):
                     if image.size != (1920, 1080):
                         raise ValueError('Monthly artwork must preserve the 1920 x 1080 camera.')
                     image.verify()
+    validate_interactive_art(dist,m)
     return m
 
 
@@ -234,8 +235,7 @@ def build(plan, nasa_root, blender, source_project=None, cpu=False, samples=24, 
     shutil.copytree(ROOT / 'pipeline', stage / 'pipeline', ignore=shutil.ignore_patterns('__pycache__'))
     dist = stage / 'dist'
     dist.mkdir()
-    for name in ['index.html', 'app.js', 'style.css']:
-        shutil.copy2(ROOT / 'dist' / name, dist / name)
+    copy_interactive_viewer(ROOT / 'dist',dist)
     (stage / 'assets').mkdir()
     shutil.copytree(ROOT / 'dist/assets/fonts', stage / 'assets/fonts')
     if (ROOT / 'dist/assets/location_map.png').exists():
@@ -294,6 +294,8 @@ def build(plan, nasa_root, blender, source_project=None, cpu=False, samples=24, 
     provenance.update({'period': plan['period'], 'source_doi': DOI,
                        'independent_values': 'All region and district monthly means verified against saved facts.'})
     write_json(dist / 'data/export_provenance.json', provenance)
+    run([sys.executable,stage/'pipeline/export_web3d.py','--project',stage,'--out',dist,'--blender',blender],stage)
+    validate_interactive_art(dist,read_json(dist/'data/manifest.json'),required=True)
     result = promote_recent(dist, Path(destination).resolve() if destination else ROOT / 'dist/recent', ROOT / '.runtime/releases', plan['monthly_pair'])
     return {'status': 'updated', 'heavy_build_performed': True, 'stage': str(stage), 'latest_period': plan['latest_period'], **result}
 

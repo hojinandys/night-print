@@ -185,6 +185,17 @@ class MonthlyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 recent.validate_recent(target)
 
+    def test_broken_monthly_3d_geometry_keeps_the_existing_edition(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            old,new=root/'published',root/'stage'
+            create_site(old);create_site(new)
+            (old/'sentinel').write_text('keep')
+            with patch.object(recent,'validate_interactive_art',side_effect=ValueError('Broken 3D binary')):
+                with self.assertRaises(ValueError):
+                    recent.promote_recent(new,old,root/'archive')
+            self.assertEqual((old/'sentinel').read_text(),'keep')
+
 
 if __name__ == '__main__':
     unittest.main()

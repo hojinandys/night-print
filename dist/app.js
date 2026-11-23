@@ -3,6 +3,7 @@
   const $ = (id) => document.getElementById(id);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const state = { data: null, region: 'all', mode: 'absolute', yearIndex: 0, district: null, timer: null, zoom: false, renderToken: 0 };
+  let viewerPromise = null, viewer = null, viewerKey = '', viewerReady = false, pendingFocus = null;
   const finite = (v) => typeof v === 'number' && Number.isFinite(v);
   const fmt = (v, digits = 1, signed = false) => finite(v) ? `${signed && v > 0 ? '+' : ''}${v.toFixed(digits)}` : '—';
   const pct = (v, signed = false) => `${fmt(v, 1, signed)}${finite(v) ? '%' : ''}`;
@@ -25,7 +26,11 @@
   }
   function imagePath(r) {
     const frames = r.render?.[state.mode] || [];
-    return frames.find((f) => Number(f.year) === Number(year()))?.url || '';
+    return editionAsset(frames.find((f) => Number(f.year) === Number(year()))?.url || '');
+  }
+  function editionAsset(path) {
+    const version = state.data?.release_id || state.data?.updated_utc;
+    return path && version ? `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}` : path;
   }
   function el(tag, className, text) {
     const element = document.createElement(tag);
@@ -72,8 +77,41 @@
   }
   function selectDistrict(id) {
     state.district = id || null; state.zoom = !!id; renderDetail();
+    if (viewerReady) { viewer.select(id); if (id) viewer.focus(id); }
+    else pendingFocus = id || null;
     const d = region().districts.find((x) => String(x.id) === String(id));
-    if (d) announce(`${d.name} 확대. ${periodName(year())} 기준 ${periodName(baseline())} 대비 평균 ${pct(series(d).percent_change, true)}.`);
+    if (d) announce(`${d.name} ${viewerReady ? '중심으로 입체 이동' : '정보'}. ${periodName(year())} 기준 ${periodName(baseline())} 대비 평균 ${pct(series(d).percent_change, true)}.`);
+  }
+  function fallback3D(message) {
+    viewerReady = false; viewer?.setActive(false); $('webgl-view').hidden = true; $('single-scene').hidden = false; $('webgl-status').hidden = true;
+    $('orbit-instruction').textContent = message; $('reset-view').textContent = '선택 해제'; $('reset-view').hidden = !state.district;
+  }
+  async function update3D(r) {
+    const frameVersion = r.webgl?.frames?.[state.mode]?.find((frame) => Number(frame.year) === Number(year()))?.url || '';
+    const key = `${r.id}/${state.mode}/${year()}/${frameVersion}`;
+    if (viewerReady && key === viewerKey) { viewer.setActive(true); viewer.select(state.district); return; }
+    const token = ++state.renderToken, selectedYear = year(), selectedMode = state.mode;
+    viewerReady = false; viewer?.setActive(false); $('webgl-view').hidden = true; $('single-scene').hidden = false;
+    $('webgl-status').hidden = false; $('webgl-status').textContent = '회전 가능한 입체를 불러오는 중';
+    $('orbit-instruction').textContent = '3D 지형을 준비하고 있습니다. 현재 보이는 장면은 정지 이미지입니다.';
+    if (!r.webgl) { fallback3D('이 관측의 3D 자료가 없어 정지 이미지를 표시합니다. 구역별 정보는 그대로 확인할 수 있습니다.'); return; }
+    try {
+      if (!viewerPromise) viewerPromise = import('./viewer3d.js').then(({ ReliefViewer }) => {
+        viewer = new ReliefViewer($('webgl-view'), { onSelect: selectDistrict, onError: () => fallback3D('3D 표시가 중단되어 정지 이미지로 전환했습니다. 새로고침하면 다시 시도합니다.'), onMove: () => { $('reset-view').hidden = false; } }); return viewer;
+      });
+      const instance = await viewerPromise;
+      if (token !== state.renderToken || state.region === 'all') return;
+      const loaded = await instance.show(r, selectedYear, selectedMode);
+      if (!loaded || token !== state.renderToken || state.region === 'all') return;
+      viewerKey = key; viewerReady = true; $('single-scene').hidden = true; $('single-image-error').hidden = true; $('webgl-view').hidden = false; $('webgl-status').hidden = true;
+      instance.setActive(true); instance.setMarkersVisible($('show-markers').checked); instance.select(state.district);
+      if (pendingFocus && pendingFocus === state.district) instance.focus(pendingFocus);
+      pendingFocus = null; $('reset-view').hidden = false; $('reset-view').textContent = '원래 시점';
+      $('orbit-instruction').textContent = '드래그해 회전 · 휠 또는 두 손가락으로 확대 · 방향키로 회전 · + / − 확대 · R 원래 시점';
+    } catch (error) {
+      if (token !== state.renderToken) return;
+      console.warn('3D unavailable:', error); fallback3D('이 기기에서 3D를 불러오지 못해 정지 이미지를 표시합니다. 구역별 정보는 그대로 확인할 수 있습니다.');
+    }
   }
   function renderHeading() {
     const changed = state.mode === 'change';
@@ -137,10 +175,8 @@
       const b = el('button', 'hotspot'); b.type = 'button'; b.style.left = `${a.x * 100}%`; b.style.top = `${a.y * 100}%`; b.classList.toggle('cold', state.mode === 'change' && series(d).change < 0); b.classList.toggle('selected', String(d.id) === String(state.district)); b.setAttribute('aria-label', `${d.name} 확대 및 정보`); b.setAttribute('aria-pressed', String(String(d.id) === String(state.district))); b.append(el('span', '', d.name)); b.addEventListener('click', () => selectDistrict(d.id)); hotspots.append(b);
     });
     hotspots.hidden = !$('show-markers').checked;
-    const scene = $('single-scene'), anchor = selected?.anchor_by_mode?.[state.mode] || selected?.anchor;
-    if (state.zoom && anchor) { scene.style.transformOrigin = `${anchor.x * 100}% ${anchor.y * 100}%`; scene.style.transform = `translate(${(.5 - anchor.x) * 100}%, ${(.5 - anchor.y) * 100}%) scale(2.05)`; scene.classList.add('zoomed'); }
-    else { scene.style.transformOrigin = '50% 50%'; scene.style.transform = ''; scene.classList.remove('zoomed'); }
-    $('reset-view').hidden = !state.zoom;
+    const scene = $('single-scene'); scene.style.transform = ''; scene.classList.remove('zoomed');
+    $('reset-view').hidden = !viewerReady && !state.district;
     $('point-instruction').textContent = selected ? `${selected.name}의 대표 위치 · 구역 전체 집계` : '표시된 지점이나 목록에서 구·군·시를 선택하세요.';
     $('place-title').textContent = selected ? selected.name : (r.full_name || label(r));
     $('place-context').textContent = `이 판의 ${commonArea()} · 면적 가중 평균`;
@@ -151,17 +187,18 @@
     $('place-note').textContent = `${periodName(year())} 값이 ${periodName(baseline())}보다 낮은 면적의 비율입니다. 분모는 공통 관측 영역이며 통계적 유의성을 뜻하지 않습니다.${Number(entity.coverage_pct) < 85 ? ' 관측 범위가 제한된 구역이므로 전체 지역으로 확대 해석하지 않습니다.' : ''}`;
     const map = $('region-map'); if (r.map_url) { map.src = r.map_url; map.hidden = false; map.alt = `${r.full_name || label(r)}의 북쪽이 위인 행정 경계 지도`; } else map.hidden = true;
     drawChart(entity);
+    update3D(r);
   }
   function render() {
     if (!state.data) return;
     renderHeading(); const all = state.region === 'all'; $('comparison').hidden = !all; $('region-detail').hidden = all;
-    if (all) renderComparison(); else renderDetail();
+    if (all) { ++state.renderToken; viewer?.setActive(false); renderComparison(); } else renderDetail();
     preloadNext();
   }
   function preloadNext() {
     if (state.yearIndex >= state.data.years.length - 1) return;
     const next = state.data.years[state.yearIndex + 1];
-    (state.region === 'all' ? state.data.regions : [region()]).forEach((r) => { const p = r.render?.[state.mode]?.find((f) => Number(f.year) === Number(next))?.url; if (p) { const img = new Image(); img.src = p; } });
+    (state.region === 'all' ? state.data.regions : [region()]).forEach((r) => { const p = r.render?.[state.mode]?.find((f) => Number(f.year) === Number(next))?.url; if (p) { const img = new Image(); img.src = editionAsset(p); } });
   }
   function configureEdition() {
     const data = state.data, source = data.source || {}, isMonthly = monthly();
@@ -252,11 +289,11 @@
   document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
   $('reveal-change').addEventListener('click', () => setMode(state.mode === 'absolute' ? 'change' : 'absolute', true));
   $('district-select').addEventListener('change', (e) => selectDistrict(e.target.value));
-  $('reset-view').addEventListener('click', () => { state.district = null; state.zoom = false; renderDetail(); });
-  $('show-markers').addEventListener('change', (e) => { $('hotspots').hidden = !e.target.checked; });
+  $('reset-view').addEventListener('click', () => { state.district = null; state.zoom = false; pendingFocus = null; if (viewerReady) { viewer.select(null); viewer.reset(); } renderDetail(); });
+  $('show-markers').addEventListener('change', (e) => { $('hotspots').hidden = !e.target.checked; viewer?.setMarkersVisible(e.target.checked); });
   $('year-slider').addEventListener('input', (e) => { if (state.data) setYear(e.target.value); });
   $('play-years').addEventListener('click', playYears); $('retry-load').addEventListener('click', loadData);
-  $('single-image').addEventListener('error', () => { $('single-image-error').hidden = false; });
+  $('single-image').addEventListener('error', () => { $('single-image-error').hidden = viewerReady; });
   $('single-image').addEventListener('load', () => { $('single-image-error').hidden = true; });
   document.querySelectorAll('[data-dialog]').forEach((b) => b.addEventListener('click', () => { stopPlay(); $(b.dataset.dialog).showModal(); document.body.classList.add('dialog-open'); }));
   document.querySelectorAll('dialog').forEach((dialog) => { dialog.addEventListener('close', () => document.body.classList.remove('dialog-open')); dialog.addEventListener('click', (event) => { if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); } }); });

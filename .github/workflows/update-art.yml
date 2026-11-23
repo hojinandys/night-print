@@ -35,7 +35,7 @@ jobs:
       - name: Check official annual metadata
         id: detect
         run: python pipeline/update.py check --github-output "$GITHUB_OUTPUT"
-      - name: Run publication and failure tests
+      - name: Test publication, 3D completeness and failure recovery
         run: python -m unittest discover -s tests -p test_update.py -v
       - name: Restore national source cache
         if: steps.detect.outputs.needs_build == 'true'
@@ -68,7 +68,7 @@ jobs:
       - name: Record an unchanged observation check
         if: steps.detect.outputs.needs_build != 'true'
         run: python pipeline/update.py record-check
-      - name: Validate complete website
+      - name: Validate both editions and interactive geometry
         run: python pipeline/update.py validate
       - name: Preserve the verified edition in Git
         run: |

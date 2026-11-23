@@ -7,6 +7,7 @@
   <meta name="description" content="서울·부산·제주의 공개 야간광으로 읽는 데이터 아트. 평균이 밝아져도 모든 자리가 함께 밝아지는 것은 아니다.">
   <title>밤의 지문 — 평균이 지운 자리</title>
   <link rel="stylesheet" href="./style.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -58,12 +59,15 @@
         <div class="detail-art">
           <div class="detail-topline"><span id="detail-label">서울</span><button id="reset-view" type="button" hidden>전체 형태로</button></div>
           <div id="single-viewport" class="single-viewport">
+            <div id="webgl-view" class="webgl-view" hidden></div>
             <div id="single-scene" class="single-scene">
               <img id="single-image" alt="" draggable="false">
               <div id="hotspots" class="hotspots" aria-label="구·군·시 대표 위치"></div>
             </div>
             <p class="image-failure" id="single-image-error" hidden>이 관측의 이미지를 불러오지 못했습니다.</p>
+            <p id="webgl-status" class="webgl-status" role="status" hidden></p>
           </div>
+          <p id="orbit-instruction" class="orbit-instruction">지역의 입체 자료를 준비하고 있습니다.</p>
           <div class="detail-bottomline"><p id="point-instruction">표시된 지점이나 목록에서 구·군·시를 선택하세요.</p><label class="markers-toggle"><input id="show-markers" type="checkbox" checked> 지점 표시</label></div>
         </div>
         <aside class="place-panel" aria-labelledby="place-title">

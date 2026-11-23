@@ -1,6 +1,7 @@
 import copy,json,sys,tempfile,unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch,Mock
+from types import SimpleNamespace
 from PIL import Image
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'pipeline'))
 import update
@@ -16,6 +17,12 @@ def fake_site(path,years=(2015,2016),tag='old'):
         frames=[{'year':y,'url':'art/frame.webp'} for y in years]
         regions.append({'id':name,'coverage_pct':90,'means':[1]*len(years),'render':{'absolute':frames,'change':frames}})
     update.write_json(path/'data/manifest.json',{'years':list(years),'regions':regions})
+
+def interactive_files(path):
+    for relative in update.VIEWER_FILES:
+        file=path/relative;file.parent.mkdir(parents=True,exist_ok=True);file.write_text('viewer dependency',encoding='utf-8')
+    manifest=update.read_json(path/'data/manifest.json');manifest['webgl']={'version':1}
+    update.write_json(path/'data/manifest.json',manifest)
 
 class UpdateTests(unittest.TestCase):
     def test_unchanged_metadata_does_not_require_rendering(self):
@@ -79,6 +86,47 @@ class UpdateTests(unittest.TestCase):
     def test_non_finite_values_block_publishing(self):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'dist';fake_site(p);m=update.read_json(p/'data/manifest.json');m['regions'][0]['means'][0]=float('nan');update.write_json(p/'data/manifest.json',m)
+            with self.assertRaises(ValueError):update.validate_site(p)
+
+    def test_missing_3d_data_preserves_previous_site(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d);old=d/'dist';new=d/'stage';fake_site(old);fake_site(new,tag='new');interactive_files(new)
+            validator=Mock(side_effect=ValueError('Incomplete 3D frame'))
+            with patch.dict(sys.modules,{'export_web3d':SimpleNamespace(validate=validator)}):
+                with self.assertRaises(ValueError):update.promote(new,old,d/'history')
+            self.assertEqual((old/'index.html').read_text(),'old')
+            validator.assert_called_once_with(new,expected_years=[2015,2016])
+
+    def test_missing_vendor_blocks_3d_publication(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d);fake_site(d/'stage');interactive_files(d/'stage')
+            (d/'stage/vendor/OrbitControls.js').unlink()
+            with self.assertRaisesRegex(ValueError,'dependency'):update.validate_site(d/'stage')
+
+    def test_viewer_cannot_silently_publish_without_3d_manifest(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'stage';fake_site(p);(p/'viewer3d.js').write_text('3D enabled')
+            with self.assertRaisesRegex(ValueError,'3D data manifest'):update.validate_site(p)
+
+    def test_new_editions_require_3d_but_old_replays_remain_readable(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'stage';fake_site(p);m=update.validate_site(p)
+            with self.assertRaisesRegex(ValueError,'3D data manifest'):update.validate_interactive_art(p,m,required=True)
+
+    def test_monthly_template_copy_includes_renderer_vendor_not_observation_geometry(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d);source=d/'source';destination=d/'copy';fake_site(source);interactive_files(source)
+            for name in ['app.js','style.css']:(source/name).write_text(name)
+            (source/'vendor/extra-license.txt').write_text('extra vendor license')
+            (source/'assets/geometry').mkdir(parents=True);(source/'assets/geometry/old.bin.gz').write_bytes(b'old observation')
+            update.copy_interactive_viewer(source,destination)
+            self.assertTrue(all((destination/f).exists() for f in update.VIEWER_FILES))
+            self.assertTrue((destination/'vendor/extra-license.txt').is_file())
+            self.assertFalse((destination/'assets/geometry').exists())
+
+    def test_broken_nested_recent_edition_blocks_complete_site_publish(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'stage';fake_site(p);update.write_json(p/'recent/data/manifest.json',{})
             with self.assertRaises(ValueError):update.validate_site(p)
 
 if __name__=='__main__':unittest.main()

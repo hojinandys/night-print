@@ -78,6 +78,35 @@ def update_lock(path):
         yield
     finally:path.unlink(missing_ok=True)
 
+VIEWER_FILES=('viewer3d.js','vendor/three.module.js','vendor/three.core.js',
+              'vendor/OrbitControls.js','vendor/RoomEnvironment.js','vendor/THREE-LICENSE.txt')
+
+def copy_interactive_viewer(source,destination):
+    """Copy the same browser renderer; never copy another edition's geometry."""
+    source=Path(source);destination=Path(destination)
+    for relative in ('index.html','app.js','style.css',*VIEWER_FILES):
+        path=source/relative
+        if not path.is_file() or path.stat().st_size==0:
+            raise ValueError(f'Missing interactive viewer dependency: {relative}')
+    destination.mkdir(parents=True,exist_ok=True)
+    for relative in ('index.html','app.js','style.css','viewer3d.js'):
+        shutil.copy2(source/relative,destination/relative)
+    shutil.copytree(source/'vendor',destination/'vendor',dirs_exist_ok=True)
+
+def validate_interactive_art(dist,manifest,required=False):
+    """Keep lightweight checks lightweight: the 3D validator uses only stdlib."""
+    dist=Path(dist)
+    if not(required or manifest.get('webgl') or (dist/'viewer3d.js').exists()):
+        return None  # Legacy image-only replay editions remain inspectable.
+    if not isinstance(manifest.get('webgl'),dict) or not manifest['webgl']:
+        raise ValueError('The interactive viewer requires a complete 3D data manifest.')
+    for relative in VIEWER_FILES:
+        path=(dist/relative).resolve()
+        if not path.is_relative_to(dist.resolve()) or not path.is_file() or path.stat().st_size==0:
+            raise ValueError(f'Missing interactive viewer dependency: {relative}')
+    from export_web3d import validate
+    return validate(dist,expected_years=manifest['years'])
+
 def validate_site(dist,expected_years=None):
     dist=Path(dist);manifest=read_json(dist/'data/manifest.json')
     if not manifest or not (dist/'index.html').is_file():raise ValueError('A complete site and data manifest are required.')
@@ -101,6 +130,10 @@ def validate_site(dist,expected_years=None):
                 with Image.open(p) as image:
                     if image.width<640 or abs(image.width/image.height-16/9)>.01:raise ValueError('Unexpected artwork dimensions.')
                     image.verify()
+    validate_interactive_art(dist,manifest)
+    if (dist/'recent/data/manifest.json').is_file():
+        from build_recent import validate_recent
+        validate_recent(dist/'recent')
     return manifest
 
 def promote(staged_dist,destination,archive_root,expected_years=None):
@@ -180,6 +213,8 @@ def build_edition(plan,blender,source_project=None,cpu=False,size=1920,samples=2
     m['update']={'state':'historical_replay' if plan['historical_replay'] else 'updated','latest_year':max(plan['years']),'last_checked':plan['checked_at'],'new_observation':new_observation,'historical_replay':plan['historical_replay'],'explanation':explanation,'common_mask_policy':'이 판의 모든 연도에 공통인 관측 영역을 다시 계산합니다. 이전 판과 관측 영역이 달라질 수 있습니다.'}
     receipts=read_json(stage/'data/metadata/source_receipts.json');m['source_files']=[{'year':r['year'],'url':r['url'],'sha256':r.get('sha256'),'status':r['status']} for r in receipts]
     write_json(manifest_path,m)
+    run([sys.executable,stage/'pipeline/export_web3d.py','--project',stage,'--out',stage/'dist','--blender',blender],cwd=stage)
+    validate_interactive_art(stage/'dist',read_json(manifest_path),required=True)
     if plan['historical_replay']:
         destination=Path(replay_destination).resolve() if replay_destination else runtime/'replay'/str(plan['years'][-1])
         destination.parent.mkdir(parents=True,exist_ok=True)

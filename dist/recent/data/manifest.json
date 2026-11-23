@@ -1307,7 +1307,829 @@
         "width": 1000,
         "height": 830.23
       },
-      "map_url": "assets/maps/seoul.svg"
+      "map_url": "assets/maps/seoul.svg",
+      "webgl": {
+        "version": 1,
+        "static_url": "assets/geometry/seoul/static-bf1e06b56281.npg.gz",
+        "static": {
+          "url": "assets/geometry/seoul/static-bf1e06b56281.npg.gz",
+          "sha256": "bf1e06b562810dda060a2be9ced5515be3afff50a54ad0258c55b5a55e2895d3",
+          "bytes": 505327,
+          "uncompressed_bytes": 1306504,
+          "arrays": {
+            "xy": {
+              "dtype": "float64",
+              "shape": [
+                21832,
+                2
+              ],
+              "count": 43664,
+              "byte_offset": 0,
+              "byte_length": 349312,
+              "sha256": "c40c8b96b49232053325973b0bd53c6b666ad31aa81cb3aca62dc145be60e144",
+              "source_dtype": "float64",
+              "source_sha256": "c40c8b96b49232053325973b0bd53c6b666ad31aa81cb3aca62dc145be60e144",
+              "source_values_exact": true
+            },
+            "faces": {
+              "dtype": "uint32",
+              "shape": [
+                21242,
+                4
+              ],
+              "count": 84968,
+              "byte_offset": 349312,
+              "byte_length": 339872,
+              "sha256": "f53e0dfab2671fe7c3c071bb619e2cc9f7e7ce2996024aad78ac41aec173e0a6",
+              "source_dtype": "int64",
+              "source_sha256": "fef007b456d8b186eb5bf87ed8e0bebe03b86b48c987adc5001fa5db640d4047",
+              "source_values_exact": true
+            },
+            "base": {
+              "dtype": "float64",
+              "shape": [
+                5187,
+                2
+              ],
+              "count": 10374,
+              "byte_offset": 689184,
+              "byte_length": 82992,
+              "sha256": "11069682bd3539b7cb220bffe905260ca74526a8df77e79fc4650805bafda376",
+              "source_dtype": "float64",
+              "source_sha256": "11069682bd3539b7cb220bffe905260ca74526a8df77e79fc4650805bafda376",
+              "source_values_exact": true
+            },
+            "outline_points": {
+              "dtype": "float64",
+              "shape": [
+                1732,
+                2
+              ],
+              "count": 3464,
+              "byte_offset": 772176,
+              "byte_length": 27712,
+              "sha256": "9f3583e302c79575c30ddee7bee020e863c25b48944588272bca6592ab3a553b",
+              "source_dtype": "float64",
+              "source_sha256": "9f3583e302c79575c30ddee7bee020e863c25b48944588272bca6592ab3a553b",
+              "source_values_exact": true
+            },
+            "outline_lengths": {
+              "dtype": "uint32",
+              "shape": [
+                1
+              ],
+              "count": 1,
+              "byte_offset": 799888,
+              "byte_length": 4,
+              "sha256": "55ed89702993fe01df5debbd56715b4d643b33be265f30f0c9a5300a563dfc06",
+              "source_dtype": "uint32",
+              "source_sha256": "55ed89702993fe01df5debbd56715b4d643b33be265f30f0c9a5300a563dfc06",
+              "source_values_exact": true
+            },
+            "district_points": {
+              "dtype": "float64",
+              "shape": [
+                5530,
+                2
+              ],
+              "count": 11060,
+              "byte_offset": 799896,
+              "byte_length": 88480,
+              "sha256": "fac48e03069f4ffb7838cc04dd2a3b02efdf228017d678fc83dc71c50c5494fa",
+              "source_dtype": "float64",
+              "source_sha256": "fac48e03069f4ffb7838cc04dd2a3b02efdf228017d678fc83dc71c50c5494fa",
+              "source_values_exact": true
+            },
+            "district_lengths": {
+              "dtype": "uint32",
+              "shape": [
+                25
+              ],
+              "count": 25,
+              "byte_offset": 888376,
+              "byte_length": 100,
+              "sha256": "2d8ca8126ed0ef6d34bf277aadc987f73ad4175de2406fe207158bffced13121",
+              "source_dtype": "uint32",
+              "source_sha256": "2d8ca8126ed0ef6d34bf277aadc987f73ad4175de2406fe207158bffced13121",
+              "source_values_exact": true
+            },
+            "base_positions": {
+              "dtype": "float32",
+              "shape": [
+                10374,
+                3
+              ],
+              "count": 31122,
+              "byte_offset": 888480,
+              "byte_length": 124488,
+              "sha256": "c22eb21767497c1396b37889da072c699f54dee03b5cb1a7f79091c511194b00"
+            },
+            "base_normals": {
+              "dtype": "float32",
+              "shape": [
+                10374,
+                3
+              ],
+              "count": 31122,
+              "byte_offset": 1012968,
+              "byte_length": 124488,
+              "sha256": "e8c58f5a5c4076df18684518c13aa465f5cf0fff8973caabb63f5ea52744d406"
+            },
+            "base_triangles": {
+              "dtype": "uint32",
+              "shape": [
+                13832,
+                3
+              ],
+              "count": 41496,
+              "byte_offset": 1137456,
+              "byte_length": 165984,
+              "sha256": "023fe2754738e025f0b29cce7ee9348d9789d696a3a24008721db731dc368789"
+            }
+          }
+        },
+        "vertex_count": 21832,
+        "quad_count": 21242,
+        "width": 10.0,
+        "height": 8.181818181818182,
+        "frames": {
+          "absolute": [
+            {
+              "url": "assets/geometry/seoul/absolute/2025-718b49768b0e.npg.gz",
+              "sha256": "718b49768b0ea3c6daa6429e49e78898bd9c3e254563d0bbb2eda4139585a485",
+              "bytes": 652320,
+              "uncompressed_bytes": 1260288,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    21832
+                  ],
+                  "count": 21832,
+                  "byte_offset": 0,
+                  "byte_length": 87328,
+                  "sha256": "1629c539e357bbca2722e32c15d3eb4ca0b12f5d94b0ef79dc248da05371edcd",
+                  "source_dtype": "float32",
+                  "source_sha256": "1629c539e357bbca2722e32c15d3eb4ca0b12f5d94b0ef79dc248da05371edcd",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    32800,
+                    3
+                  ],
+                  "count": 98400,
+                  "byte_offset": 87328,
+                  "byte_length": 393600,
+                  "sha256": "7f5d7ae4b686c64764d574d3ae65cb2a7340934fdbd7f52a1d19547baad08fd8",
+                  "source_dtype": "float32",
+                  "source_sha256": "7f5d7ae4b686c64764d574d3ae65cb2a7340934fdbd7f52a1d19547baad08fd8",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    710
+                  ],
+                  "count": 710,
+                  "byte_offset": 480928,
+                  "byte_length": 2840,
+                  "sha256": "a6a1ef6dfb1ad82f2737a5cf066b4f8656e71810a94585a09d88bb1fb7beafb2",
+                  "source_dtype": "int32",
+                  "source_sha256": "a6a1ef6dfb1ad82f2737a5cf066b4f8656e71810a94585a09d88bb1fb7beafb2",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    710
+                  ],
+                  "count": 710,
+                  "byte_offset": 483768,
+                  "byte_length": 2840,
+                  "sha256": "a71145f1bec9a6ce9e774a7d713e59436d0900b751eb3cc8d6ca00a07f724f12",
+                  "source_dtype": "float32",
+                  "source_sha256": "a71145f1bec9a6ce9e774a7d713e59436d0900b751eb3cc8d6ca00a07f724f12",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    42484,
+                    3
+                  ],
+                  "count": 127452,
+                  "byte_offset": 486608,
+                  "byte_length": 509808,
+                  "sha256": "eb273dd38e04720bd131633e24a9d48a459681b1d5406132d70c4017d319375e"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    21832,
+                    3
+                  ],
+                  "count": 65496,
+                  "byte_offset": 996416,
+                  "byte_length": 261984,
+                  "sha256": "ebe71db5a08518977ad8058b6d282a9fefe5114e2405849ed8be6842fd14f53d"
+                }
+              },
+              "year": 2025,
+              "vertex_count": 21832,
+              "index_count": 127452
+            },
+            {
+              "url": "assets/geometry/seoul/absolute/2026-ac872243f24d.npg.gz",
+              "sha256": "ac872243f24db5a3061bd001a9623fc11ecda1b05e252e0d3391149ce5efbdef",
+              "bytes": 668453,
+              "uncompressed_bytes": 1291064,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    21832
+                  ],
+                  "count": 21832,
+                  "byte_offset": 0,
+                  "byte_length": 87328,
+                  "sha256": "109a39ed0f38419b02e4003b924868f1375e0a21fb3fc19523e720230ee12287",
+                  "source_dtype": "float32",
+                  "source_sha256": "109a39ed0f38419b02e4003b924868f1375e0a21fb3fc19523e720230ee12287",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    35313,
+                    3
+                  ],
+                  "count": 105939,
+                  "byte_offset": 87328,
+                  "byte_length": 423756,
+                  "sha256": "d69f4201fd1f6ee91f3b303c75cd6bd596ccd5aad2eee8ee79535dc7f1a8a22c",
+                  "source_dtype": "float32",
+                  "source_sha256": "d69f4201fd1f6ee91f3b303c75cd6bd596ccd5aad2eee8ee79535dc7f1a8a22c",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    785
+                  ],
+                  "count": 785,
+                  "byte_offset": 511088,
+                  "byte_length": 3140,
+                  "sha256": "491b3d5cf9a3f995b35e5a4618ea0ab068671a8c3258a6e0ddb83a591631b842",
+                  "source_dtype": "int32",
+                  "source_sha256": "491b3d5cf9a3f995b35e5a4618ea0ab068671a8c3258a6e0ddb83a591631b842",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    785
+                  ],
+                  "count": 785,
+                  "byte_offset": 514232,
+                  "byte_length": 3140,
+                  "sha256": "74207b3b1f0e234aa21882dd1ce65d59657dd8f668193605b233cc7c9139c5d0",
+                  "source_dtype": "float32",
+                  "source_sha256": "74207b3b1f0e234aa21882dd1ce65d59657dd8f668193605b233cc7c9139c5d0",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    42484,
+                    3
+                  ],
+                  "count": 127452,
+                  "byte_offset": 517376,
+                  "byte_length": 509808,
+                  "sha256": "eb273dd38e04720bd131633e24a9d48a459681b1d5406132d70c4017d319375e"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    21832,
+                    3
+                  ],
+                  "count": 65496,
+                  "byte_offset": 1027184,
+                  "byte_length": 261984,
+                  "sha256": "580741285a40fafe401c7422ac86c06a7a43310e44af75b94675d2d2b4121f89"
+                }
+              },
+              "year": 2026,
+              "vertex_count": 21832,
+              "index_count": 127452
+            }
+          ],
+          "change": [
+            {
+              "url": "assets/geometry/seoul/change/2025-05ae80dbe73f.npg.gz",
+              "sha256": "05ae80dbe73f4e6201a768cf4ab943dbd282965590972d6993a05afd34898b30",
+              "bytes": 141171,
+              "uncompressed_bytes": 860976,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    21832
+                  ],
+                  "count": 21832,
+                  "byte_offset": 0,
+                  "byte_length": 87328,
+                  "sha256": "94559a5bc057bb7ababcd16781284b500ffc4c9a0ac3d624edfdd60e52874200",
+                  "source_dtype": "float32",
+                  "source_sha256": "94559a5bc057bb7ababcd16781284b500ffc4c9a0ac3d624edfdd60e52874200",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    0,
+                    3
+                  ],
+                  "count": 0,
+                  "byte_offset": 87328,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "float32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    0
+                  ],
+                  "count": 0,
+                  "byte_offset": 87328,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "int32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    0
+                  ],
+                  "count": 0,
+                  "byte_offset": 87328,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "float32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    42484,
+                    3
+                  ],
+                  "count": 127452,
+                  "byte_offset": 87328,
+                  "byte_length": 509808,
+                  "sha256": "eb273dd38e04720bd131633e24a9d48a459681b1d5406132d70c4017d319375e"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    21832,
+                    3
+                  ],
+                  "count": 65496,
+                  "byte_offset": 597136,
+                  "byte_length": 261984,
+                  "sha256": "7364e3f1675ca5471aa2cff2be052e38c87362858dc3585b5b1765a9aeb5c01a"
+                }
+              },
+              "year": 2025,
+              "vertex_count": 21832,
+              "index_count": 127452
+            },
+            {
+              "url": "assets/geometry/seoul/change/2026-5cf4fb1b3388.npg.gz",
+              "sha256": "5cf4fb1b338831efa89c6ebaf4402847fa86b8a68f47cc7bf6be739d5f3d4fa3",
+              "bytes": 1017281,
+              "uncompressed_bytes": 2040736,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    21832
+                  ],
+                  "count": 21832,
+                  "byte_offset": 0,
+                  "byte_length": 87328,
+                  "sha256": "00bedb44f37528f2e43838fd36405cdc6152a3923e9f608b7f465aaa21cb59f6",
+                  "source_dtype": "float32",
+                  "source_sha256": "00bedb44f37528f2e43838fd36405cdc6152a3923e9f608b7f465aaa21cb59f6",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    96117,
+                    3
+                  ],
+                  "count": 288351,
+                  "byte_offset": 87328,
+                  "byte_length": 1153404,
+                  "sha256": "1477e7c846b890588586aa071f0ab64cd5f7aabf93a2f0e56be2ff7169119333",
+                  "source_dtype": "float32",
+                  "source_sha256": "1477e7c846b890588586aa071f0ab64cd5f7aabf93a2f0e56be2ff7169119333",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    3288
+                  ],
+                  "count": 3288,
+                  "byte_offset": 1240736,
+                  "byte_length": 13152,
+                  "sha256": "6069c6d483a2045e13c68fedd45290e675d86af4fe439d7a9da5eeec23d62d14",
+                  "source_dtype": "int32",
+                  "source_sha256": "6069c6d483a2045e13c68fedd45290e675d86af4fe439d7a9da5eeec23d62d14",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    3288
+                  ],
+                  "count": 3288,
+                  "byte_offset": 1253888,
+                  "byte_length": 13152,
+                  "sha256": "cba191d0e8c991c6adfab468dae2a031609d76adda5916c372fffbd82a16f2e7",
+                  "source_dtype": "float32",
+                  "source_sha256": "cba191d0e8c991c6adfab468dae2a031609d76adda5916c372fffbd82a16f2e7",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    42484,
+                    3
+                  ],
+                  "count": 127452,
+                  "byte_offset": 1267040,
+                  "byte_length": 509808,
+                  "sha256": "a044dabc78b833eb1333d203f8cbed3cca49009ceb818ee2c04a3be621057570"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    21832,
+                    3
+                  ],
+                  "count": 65496,
+                  "byte_offset": 1776848,
+                  "byte_length": 261984,
+                  "sha256": "82107a7f680d019d4fde0ef7eb588d2cd7af474dafdbcd03d17d9034cde15bc7"
+                }
+              },
+              "year": 2026,
+              "vertex_count": 21832,
+              "index_count": 127452
+            }
+          ]
+        },
+        "camera": {
+          "position": [
+            11,
+            -16,
+            19
+          ],
+          "target_by_mode": {
+            "absolute": [
+              0,
+              0,
+              0.45
+            ],
+            "change": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ortho_width": 18.5,
+          "shift_y": 0.015,
+          "up": [
+            0,
+            0,
+            1
+          ]
+        },
+        "district_anchors": [
+          {
+            "id": "11110",
+            "name": "종로구",
+            "xyz": [
+              -0.1652905777292689,
+              1.0429150309661621,
+              0
+            ]
+          },
+          {
+            "id": "11140",
+            "name": "중구",
+            "xyz": [
+              0.3846986462472176,
+              -0.1649473019123271,
+              0
+            ]
+          },
+          {
+            "id": "11170",
+            "name": "용산구",
+            "xyz": [
+              0.12116115267823946,
+              -0.8460142347684686,
+              0
+            ]
+          },
+          {
+            "id": "11200",
+            "name": "성동구",
+            "xyz": [
+              1.5108384882648591,
+              -0.3494743081866824,
+              0
+            ]
+          },
+          {
+            "id": "11215",
+            "name": "광진구",
+            "xyz": [
+              2.5993277010630647,
+              -0.47595889027085303,
+              0
+            ]
+          },
+          {
+            "id": "11230",
+            "name": "동대문구",
+            "xyz": [
+              1.762992173650426,
+              0.5713559243540195,
+              0
+            ]
+          },
+          {
+            "id": "11260",
+            "name": "중랑구",
+            "xyz": [
+              2.7177901300421596,
+              0.8706486806033977,
+              0
+            ]
+          },
+          {
+            "id": "11290",
+            "name": "성북구",
+            "xyz": [
+              1.202300648089474,
+              1.2563241720697902,
+              0
+            ]
+          },
+          {
+            "id": "11305",
+            "name": "강북구",
+            "xyz": [
+              0.7084934678867114,
+              2.4079652961667675,
+              0
+            ]
+          },
+          {
+            "id": "11320",
+            "name": "도봉구",
+            "xyz": [
+              1.3576790027602805,
+              2.949656287231664,
+              0
+            ]
+          },
+          {
+            "id": "11350",
+            "name": "노원구",
+            "xyz": [
+              2.2090610800217534,
+              2.620518367704391,
+              0
+            ]
+          },
+          {
+            "id": "11380",
+            "name": "은평구",
+            "xyz": [
+              -1.1075221759464604,
+              1.5823240548074728,
+              0
+            ]
+          },
+          {
+            "id": "11410",
+            "name": "서대문구",
+            "xyz": [
+              -0.965690387755711,
+              0.5761970410556472,
+              0
+            ]
+          },
+          {
+            "id": "11440",
+            "name": "마포구",
+            "xyz": [
+              -1.7211677637510456,
+              -0.051429906906801964,
+              0
+            ]
+          },
+          {
+            "id": "11470",
+            "name": "양천구",
+            "xyz": [
+              -2.8161375665368946,
+              -1.0124181603322218,
+              0
+            ]
+          },
+          {
+            "id": "11500",
+            "name": "강서구",
+            "xyz": [
+              -3.5716541769144476,
+              0.15524157567651242,
+              0
+            ]
+          },
+          {
+            "id": "11530",
+            "name": "구로구",
+            "xyz": [
+              -2.8556209176416547,
+              -1.870693710638186,
+              0
+            ]
+          },
+          {
+            "id": "11545",
+            "name": "금천구",
+            "xyz": [
+              -1.8212782293830412,
+              -2.947165308563619,
+              0
+            ]
+          },
+          {
+            "id": "11560",
+            "name": "영등포구",
+            "xyz": [
+              -1.5001140243179383,
+              -1.2715512303720145,
+              0
+            ]
+          },
+          {
+            "id": "11590",
+            "name": "동작구",
+            "xyz": [
+              -0.6386243178761358,
+              -1.87330293732151,
+              0
+            ]
+          },
+          {
+            "id": "11620",
+            "name": "관악구",
+            "xyz": [
+              -0.643631271241511,
+              -2.785864403560854,
+              0
+            ]
+          },
+          {
+            "id": "11650",
+            "name": "서초구",
+            "xyz": [
+              0.7935330595597988,
+              -2.453643422859975,
+              0
+            ]
+          },
+          {
+            "id": "11680",
+            "name": "강남구",
+            "xyz": [
+              1.7925882255004768,
+              -1.8925528920855519,
+              0
+            ]
+          },
+          {
+            "id": "11710",
+            "name": "송파구",
+            "xyz": [
+              2.9561474545519535,
+              -1.7469207360890584,
+              0
+            ]
+          },
+          {
+            "id": "11740",
+            "name": "강동구",
+            "xyz": [
+              3.9168051140061158,
+              -0.49738694328838934,
+              0
+            ]
+          }
+        ],
+        "scene": {
+          "z_up": true,
+          "floor_z": {
+            "absolute": -1.1,
+            "change": -2.6
+          },
+          "base_visible": {
+            "absolute": true,
+            "change": false
+          },
+          "outline_z": {
+            "absolute": -0.06,
+            "change": 0
+          },
+          "district_line_z": {
+            "absolute": -0.059,
+            "change": -0.004
+          },
+          "extent_frame_z": -0.12,
+          "north_marker_z": -0.11,
+          "body": {
+            "color": [
+              0.028,
+              0.019,
+              0.012
+            ],
+            "metalness": 0.72,
+            "roughness": 0.34
+          },
+          "lights": [
+            {
+              "position": [
+                -5,
+                -1,
+                9
+              ],
+              "color": [
+                1,
+                0.69,
+                0.43
+              ],
+              "power": 1100,
+              "size": 9
+            },
+            {
+              "position": [
+                2,
+                7,
+                8
+              ],
+              "color": [
+                0.42,
+                0.61,
+                1
+              ],
+              "power": 1400,
+              "size": 8
+            },
+            {
+              "position": [
+                6,
+                1,
+                5
+              ],
+              "color": [
+                1,
+                0.8,
+                0.58
+              ],
+              "power": 850,
+              "size": 5
+            }
+          ]
+        }
+      }
     },
     {
       "full_name": "부산광역시",
@@ -2135,7 +2957,748 @@
         "width": 1000,
         "height": 959.08
       },
-      "map_url": "assets/maps/busan.svg"
+      "map_url": "assets/maps/busan.svg",
+      "webgl": {
+        "version": 1,
+        "static_url": "assets/geometry/busan/static-ff15f2b070ce.npg.gz",
+        "static": {
+          "url": "assets/geometry/busan/static-ff15f2b070ce.npg.gz",
+          "sha256": "ff15f2b070cec84cd89f0bd878e968bc301397f36735dbad253122d7f5236a0c",
+          "bytes": 584930,
+          "uncompressed_bytes": 1551424,
+          "arrays": {
+            "xy": {
+              "dtype": "float64",
+              "shape": [
+                28043,
+                2
+              ],
+              "count": 56086,
+              "byte_offset": 0,
+              "byte_length": 448688,
+              "sha256": "daa80c6921f6af69d470f8163e37627fa1874cc57c368caf2dc4b40cd0765ef4",
+              "source_dtype": "float64",
+              "source_sha256": "daa80c6921f6af69d470f8163e37627fa1874cc57c368caf2dc4b40cd0765ef4",
+              "source_values_exact": true
+            },
+            "faces": {
+              "dtype": "uint32",
+              "shape": [
+                27056,
+                4
+              ],
+              "count": 108224,
+              "byte_offset": 448688,
+              "byte_length": 432896,
+              "sha256": "7a05f8b4b9fd627f07ae96e2d05475d264989bdf10667d21a9ffb51b1f0f48ae",
+              "source_dtype": "int64",
+              "source_sha256": "5afe43d6b3967452e0656733d60697d18c141d64ff82634398f8cc7f35731b38",
+              "source_values_exact": true
+            },
+            "base": {
+              "dtype": "float64",
+              "shape": [
+                5931,
+                2
+              ],
+              "count": 11862,
+              "byte_offset": 881584,
+              "byte_length": 94896,
+              "sha256": "391c8b9c4ea80d4c260d039dacec1d06ccf71408f371e7594f034f6a3595c64f",
+              "source_dtype": "float64",
+              "source_sha256": "391c8b9c4ea80d4c260d039dacec1d06ccf71408f371e7594f034f6a3595c64f",
+              "source_values_exact": true
+            },
+            "outline_points": {
+              "dtype": "float64",
+              "shape": [
+                1987,
+                2
+              ],
+              "count": 3974,
+              "byte_offset": 976480,
+              "byte_length": 31792,
+              "sha256": "172bd3bbad21a80399d18829c299b2f8d838b90e9338174221b7d0e9849e6268",
+              "source_dtype": "float64",
+              "source_sha256": "172bd3bbad21a80399d18829c299b2f8d838b90e9338174221b7d0e9849e6268",
+              "source_values_exact": true
+            },
+            "outline_lengths": {
+              "dtype": "uint32",
+              "shape": [
+                6
+              ],
+              "count": 6,
+              "byte_offset": 1008272,
+              "byte_length": 24,
+              "sha256": "e4b38a3887df146ff4e9143b2e640321910e781ce2aba255ecfab7b3b1aad576",
+              "source_dtype": "uint32",
+              "source_sha256": "e4b38a3887df146ff4e9143b2e640321910e781ce2aba255ecfab7b3b1aad576",
+              "source_values_exact": true
+            },
+            "district_points": {
+              "dtype": "float64",
+              "shape": [
+                4094,
+                2
+              ],
+              "count": 8188,
+              "byte_offset": 1008296,
+              "byte_length": 65504,
+              "sha256": "1de1d28f557cbb561c97fbbfac8b86a26210d46e560dbff1722cead6d22ebdcd",
+              "source_dtype": "float64",
+              "source_sha256": "1de1d28f557cbb561c97fbbfac8b86a26210d46e560dbff1722cead6d22ebdcd",
+              "source_values_exact": true
+            },
+            "district_lengths": {
+              "dtype": "uint32",
+              "shape": [
+                19
+              ],
+              "count": 19,
+              "byte_offset": 1073800,
+              "byte_length": 76,
+              "sha256": "fb6e79009f50f4120d64cfc6f962ca7e39e08268891a8d525bfb63fff2e946f7",
+              "source_dtype": "uint32",
+              "source_sha256": "fb6e79009f50f4120d64cfc6f962ca7e39e08268891a8d525bfb63fff2e946f7",
+              "source_values_exact": true
+            },
+            "base_positions": {
+              "dtype": "float32",
+              "shape": [
+                11862,
+                3
+              ],
+              "count": 35586,
+              "byte_offset": 1073880,
+              "byte_length": 142344,
+              "sha256": "bf000cdbf571af1568e765e3fe4ef6dd4afc24cb7397486e41b2fa5223740251"
+            },
+            "base_normals": {
+              "dtype": "float32",
+              "shape": [
+                11862,
+                3
+              ],
+              "count": 35586,
+              "byte_offset": 1216224,
+              "byte_length": 142344,
+              "sha256": "9ab87d336b2968e176a9653648f96c36695f8ab98788276a31c98a09544849e1"
+            },
+            "base_triangles": {
+              "dtype": "uint32",
+              "shape": [
+                15816,
+                3
+              ],
+              "count": 47448,
+              "byte_offset": 1358568,
+              "byte_length": 189792,
+              "sha256": "77c6cb0927b9718fa2f8594044a957aa2caa6a057852ab05b2e04cf2fb8c2d2a"
+            }
+          }
+        },
+        "vertex_count": 28043,
+        "quad_count": 27056,
+        "width": 10.0,
+        "height": 9.583333333333334,
+        "frames": {
+          "absolute": [
+            {
+              "url": "assets/geometry/busan/absolute/2025-c15498709416.npg.gz",
+              "sha256": "c1549870941627865bab62499ef572440b8915ace8a7225a710727bd990c298f",
+              "bytes": 962101,
+              "uncompressed_bytes": 1861412,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    28043
+                  ],
+                  "count": 28043,
+                  "byte_offset": 0,
+                  "byte_length": 112172,
+                  "sha256": "2162025fb520eb0677210b239ace6a2f87d8e4caee7a86d3fa5d0c39829630dd",
+                  "source_dtype": "float32",
+                  "source_sha256": "2162025fb520eb0677210b239ace6a2f87d8e4caee7a86d3fa5d0c39829630dd",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    62519,
+                    3
+                  ],
+                  "count": 187557,
+                  "byte_offset": 112176,
+                  "byte_length": 750228,
+                  "sha256": "d9db05eaf62d0a0313826777f52bf079c3ab7189283ed9f7240fb332dbeaebb4",
+                  "source_dtype": "float32",
+                  "source_sha256": "d9db05eaf62d0a0313826777f52bf079c3ab7189283ed9f7240fb332dbeaebb4",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    1406
+                  ],
+                  "count": 1406,
+                  "byte_offset": 862408,
+                  "byte_length": 5624,
+                  "sha256": "3d6432dca03c09ccf111c49229dcd5b0dfbd65b4c2745328c72aacacd53359b9",
+                  "source_dtype": "int32",
+                  "source_sha256": "3d6432dca03c09ccf111c49229dcd5b0dfbd65b4c2745328c72aacacd53359b9",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    1406
+                  ],
+                  "count": 1406,
+                  "byte_offset": 868032,
+                  "byte_length": 5624,
+                  "sha256": "e5e0e5a46e8846484a8756cc53e224ad8b0273505b961a14debe9eb2fce8bdb2",
+                  "source_dtype": "float32",
+                  "source_sha256": "e5e0e5a46e8846484a8756cc53e224ad8b0273505b961a14debe9eb2fce8bdb2",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    54112,
+                    3
+                  ],
+                  "count": 162336,
+                  "byte_offset": 873656,
+                  "byte_length": 649344,
+                  "sha256": "f8efe6c8499f371cbc431a06046a660817dfed361ee774e856f68656778726dc"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    28043,
+                    3
+                  ],
+                  "count": 84129,
+                  "byte_offset": 1523000,
+                  "byte_length": 336516,
+                  "sha256": "5df6c312afde07087c5568c3e83cf532ee9dfb394867f0fd804d65f18a9b6ce6"
+                }
+              },
+              "year": 2025,
+              "vertex_count": 28043,
+              "index_count": 162336
+            },
+            {
+              "url": "assets/geometry/busan/absolute/2026-b5bf86fcd10f.npg.gz",
+              "sha256": "b5bf86fcd10f457092e26abf1b7e76f3fbf56215489af8122f32d374310f9c62",
+              "bytes": 983485,
+              "uncompressed_bytes": 1904348,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    28043
+                  ],
+                  "count": 28043,
+                  "byte_offset": 0,
+                  "byte_length": 112172,
+                  "sha256": "703f9f40a291c97a5b8408c653dd30890fa85707cec7145d484a0c15d55aac89",
+                  "source_dtype": "float32",
+                  "source_sha256": "703f9f40a291c97a5b8408c653dd30890fa85707cec7145d484a0c15d55aac89",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    66068,
+                    3
+                  ],
+                  "count": 198204,
+                  "byte_offset": 112176,
+                  "byte_length": 792816,
+                  "sha256": "7738cc8c521c8e90bff668e29b8f6649870682a85fb3e14e90a579eae3d55846",
+                  "source_dtype": "float32",
+                  "source_sha256": "7738cc8c521c8e90bff668e29b8f6649870682a85fb3e14e90a579eae3d55846",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    1449
+                  ],
+                  "count": 1449,
+                  "byte_offset": 904992,
+                  "byte_length": 5796,
+                  "sha256": "2f563fc99cde7feccb8fd127d7efecd7dbfa485d0acbdd0149300fb664b7b5e2",
+                  "source_dtype": "int32",
+                  "source_sha256": "2f563fc99cde7feccb8fd127d7efecd7dbfa485d0acbdd0149300fb664b7b5e2",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    1449
+                  ],
+                  "count": 1449,
+                  "byte_offset": 910792,
+                  "byte_length": 5796,
+                  "sha256": "f899f3d333838487d1def02e4a6cb814055130759cf2b0d11ed71b0b37de8d01",
+                  "source_dtype": "float32",
+                  "source_sha256": "f899f3d333838487d1def02e4a6cb814055130759cf2b0d11ed71b0b37de8d01",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    54112,
+                    3
+                  ],
+                  "count": 162336,
+                  "byte_offset": 916592,
+                  "byte_length": 649344,
+                  "sha256": "4742fdd4d94a93fac9a256282d89a55db1bc8b5ade6a43915cf90c9ce34df435"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    28043,
+                    3
+                  ],
+                  "count": 84129,
+                  "byte_offset": 1565936,
+                  "byte_length": 336516,
+                  "sha256": "f4d80376d949556451105870be8b5036a59024012471298a38d6a43261ef041f"
+                }
+              },
+              "year": 2026,
+              "vertex_count": 28043,
+              "index_count": 162336
+            }
+          ],
+          "change": [
+            {
+              "url": "assets/geometry/busan/change/2025-6281354b5b8a.npg.gz",
+              "sha256": "6281354b5b8aff988ca48e78ae77917425cbf7c75301a5f403a2aaf9bfc01e0c",
+              "bytes": 178767,
+              "uncompressed_bytes": 1099900,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    28043
+                  ],
+                  "count": 28043,
+                  "byte_offset": 0,
+                  "byte_length": 112172,
+                  "sha256": "61a489dc7fefdd068a8fa24bce91c8a6fbddd969bf1d47aa521b707d25778701",
+                  "source_dtype": "float32",
+                  "source_sha256": "61a489dc7fefdd068a8fa24bce91c8a6fbddd969bf1d47aa521b707d25778701",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    0,
+                    3
+                  ],
+                  "count": 0,
+                  "byte_offset": 112176,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "float32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    0
+                  ],
+                  "count": 0,
+                  "byte_offset": 112176,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "int32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    0
+                  ],
+                  "count": 0,
+                  "byte_offset": 112176,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "float32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    54112,
+                    3
+                  ],
+                  "count": 162336,
+                  "byte_offset": 112176,
+                  "byte_length": 649344,
+                  "sha256": "f2e5ec269aef028ca851e096ea8eb7238173dff4e3e21f4304bd7ee14d2860ed"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    28043,
+                    3
+                  ],
+                  "count": 84129,
+                  "byte_offset": 761520,
+                  "byte_length": 336516,
+                  "sha256": "34e595ff1fbe4267ff14b4d870011de3dba59cebbeb081a8fd1d0a1cc80b0430"
+                }
+              },
+              "year": 2025,
+              "vertex_count": 28043,
+              "index_count": 162336
+            },
+            {
+              "url": "assets/geometry/busan/change/2026-218b9270c042.npg.gz",
+              "sha256": "218b9270c042d64ec5ae408f253d114fdf88edd54bc8b37ab1b4482a1b985c2c",
+              "bytes": 1068392,
+              "uncompressed_bytes": 2100620,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    28043
+                  ],
+                  "count": 28043,
+                  "byte_offset": 0,
+                  "byte_length": 112172,
+                  "sha256": "dae39fbcba5f4cbf1737d401c0345fe8b25f1b1ded367f81055155bf8394299e",
+                  "source_dtype": "float32",
+                  "source_sha256": "dae39fbcba5f4cbf1737d401c0345fe8b25f1b1ded367f81055155bf8394299e",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    81199,
+                    3
+                  ],
+                  "count": 243597,
+                  "byte_offset": 112176,
+                  "byte_length": 974388,
+                  "sha256": "9ee158bbd989381cfe7b680c386dda7cddf6edc0f478589df363ec57a8426c43",
+                  "source_dtype": "float32",
+                  "source_sha256": "9ee158bbd989381cfe7b680c386dda7cddf6edc0f478589df363ec57a8426c43",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    3285
+                  ],
+                  "count": 3285,
+                  "byte_offset": 1086568,
+                  "byte_length": 13140,
+                  "sha256": "395dc629aaee93531bff7541aa3d44d52c9bd2e5d621039d738ffe0bf11d01e3",
+                  "source_dtype": "int32",
+                  "source_sha256": "395dc629aaee93531bff7541aa3d44d52c9bd2e5d621039d738ffe0bf11d01e3",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    3285
+                  ],
+                  "count": 3285,
+                  "byte_offset": 1099712,
+                  "byte_length": 13140,
+                  "sha256": "ed66f1087f59d01e7c50e050d7e749134f5e39bcd1373f06f02acb001b174200",
+                  "source_dtype": "float32",
+                  "source_sha256": "ed66f1087f59d01e7c50e050d7e749134f5e39bcd1373f06f02acb001b174200",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    54112,
+                    3
+                  ],
+                  "count": 162336,
+                  "byte_offset": 1112856,
+                  "byte_length": 649344,
+                  "sha256": "01f55dfc0b03790fc87ecc6316c5af184c4b7e6cd977378aa367e64c9a6c8c4a"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    28043,
+                    3
+                  ],
+                  "count": 84129,
+                  "byte_offset": 1762200,
+                  "byte_length": 336516,
+                  "sha256": "182f2d6626133d91bb818b32496bdde3dd310412d56120a69f6827ff1b657eda"
+                }
+              },
+              "year": 2026,
+              "vertex_count": 28043,
+              "index_count": 162336
+            }
+          ]
+        },
+        "camera": {
+          "position": [
+            11,
+            -16,
+            19
+          ],
+          "target_by_mode": {
+            "absolute": [
+              0,
+              0,
+              0.45
+            ],
+            "change": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ortho_width": 18.5,
+          "shift_y": 0.015,
+          "up": [
+            0,
+            0,
+            1
+          ]
+        },
+        "district_anchors": [
+          {
+            "id": "26110",
+            "name": "중구",
+            "xyz": [
+              -0.3474954571477065,
+              -1.9068182778822182,
+              0
+            ]
+          },
+          {
+            "id": "26140",
+            "name": "서구",
+            "xyz": [
+              -0.5656716068024737,
+              -2.1760438331747234,
+              0
+            ]
+          },
+          {
+            "id": "26170",
+            "name": "동구",
+            "xyz": [
+              -0.07673176814879602,
+              -1.394702007388308,
+              0
+            ]
+          },
+          {
+            "id": "26200",
+            "name": "영도구",
+            "xyz": [
+              0.3091839180993217,
+              -2.620717952467967,
+              0
+            ]
+          },
+          {
+            "id": "26230",
+            "name": "부산진구",
+            "xyz": [
+              -0.06832357567066841,
+              -0.5102094798231459,
+              0
+            ]
+          },
+          {
+            "id": "26260",
+            "name": "동래구",
+            "xyz": [
+              0.5748879918482513,
+              0.378946213349797,
+              0
+            ]
+          },
+          {
+            "id": "26290",
+            "name": "남구",
+            "xyz": [
+              0.8403329590602759,
+              -1.361066551525437,
+              0
+            ]
+          },
+          {
+            "id": "26320",
+            "name": "북구",
+            "xyz": [
+              -0.5217046453512012,
+              1.0424440700521034,
+              0
+            ]
+          },
+          {
+            "id": "26350",
+            "name": "해운대구",
+            "xyz": [
+              1.8385216141818335,
+              0.24231797387357804,
+              0
+            ]
+          },
+          {
+            "id": "26380",
+            "name": "사하구",
+            "xyz": [
+              -1.6011318532558654,
+              -2.5269245146593313,
+              0
+            ]
+          },
+          {
+            "id": "26410",
+            "name": "금정구",
+            "xyz": [
+              0.8007438628679181,
+              1.5995392330329439,
+              0
+            ]
+          },
+          {
+            "id": "26440",
+            "name": "강서구",
+            "xyz": [
+              -3.3890754803444727,
+              -1.7879961492240546,
+              0
+            ]
+          },
+          {
+            "id": "26470",
+            "name": "연제구",
+            "xyz": [
+              0.675992538205901,
+              -0.23366767494143764,
+              0
+            ]
+          },
+          {
+            "id": "26500",
+            "name": "수영구",
+            "xyz": [
+              1.2157972837972435,
+              -0.6321389673056547,
+              0
+            ]
+          },
+          {
+            "id": "26530",
+            "name": "사상구",
+            "xyz": [
+              -1.1648324451249452,
+              -0.7394127839892948,
+              0
+            ]
+          },
+          {
+            "id": "26710",
+            "name": "기장군",
+            "xyz": [
+              2.7225745980238814,
+              2.20606498676391,
+              0
+            ]
+          }
+        ],
+        "scene": {
+          "z_up": true,
+          "floor_z": {
+            "absolute": -1.1,
+            "change": -2.6
+          },
+          "base_visible": {
+            "absolute": true,
+            "change": false
+          },
+          "outline_z": {
+            "absolute": -0.06,
+            "change": 0
+          },
+          "district_line_z": {
+            "absolute": -0.059,
+            "change": -0.004
+          },
+          "extent_frame_z": -0.12,
+          "north_marker_z": -0.11,
+          "body": {
+            "color": [
+              0.028,
+              0.019,
+              0.012
+            ],
+            "metalness": 0.72,
+            "roughness": 0.34
+          },
+          "lights": [
+            {
+              "position": [
+                -5,
+                -1,
+                9
+              ],
+              "color": [
+                1,
+                0.69,
+                0.43
+              ],
+              "power": 1100,
+              "size": 9
+            },
+            {
+              "position": [
+                2,
+                7,
+                8
+              ],
+              "color": [
+                0.42,
+                0.61,
+                1
+              ],
+              "power": 1400,
+              "size": 8
+            },
+            {
+              "position": [
+                6,
+                1,
+                5
+              ],
+              "color": [
+                1,
+                0.8,
+                0.58
+              ],
+              "power": 850,
+              "size": 5
+            }
+          ]
+        }
+      }
     },
     {
       "full_name": "제주특별자치도",
@@ -2291,7 +3854,622 @@
         "width": 1000,
         "height": 1266.11
       },
-      "map_url": "assets/maps/jeju.svg"
+      "map_url": "assets/maps/jeju.svg",
+      "webgl": {
+        "version": 1,
+        "static_url": "assets/geometry/jeju/static-e21c2478a8b9.npg.gz",
+        "static": {
+          "url": "assets/geometry/jeju/static-e21c2478a8b9.npg.gz",
+          "sha256": "e21c2478a8b95a3003b7ed31063a7d6cc34816c2442e3c0f239bf725ab0ce1c5",
+          "bytes": 951403,
+          "uncompressed_bytes": 2891648,
+          "arrays": {
+            "xy": {
+              "dtype": "float64",
+              "shape": [
+                65496,
+                2
+              ],
+              "count": 130992,
+              "byte_offset": 0,
+              "byte_length": 1047936,
+              "sha256": "9283ee96aa7c2676540ac8df00a9d6640afaeaa826622454e090b328445afc94",
+              "source_dtype": "float64",
+              "source_sha256": "9283ee96aa7c2676540ac8df00a9d6640afaeaa826622454e090b328445afc94",
+              "source_values_exact": true
+            },
+            "faces": {
+              "dtype": "uint32",
+              "shape": [
+                64167,
+                4
+              ],
+              "count": 256668,
+              "byte_offset": 1047936,
+              "byte_length": 1026672,
+              "sha256": "69f4981786fd4a2680047f0708e6a069582dde47bdc6c91fbddfbee382abbf8b",
+              "source_dtype": "int64",
+              "source_sha256": "6983f5bae7ae13e66e92b69f1661d6466b76f39225e6cc630b114b60dc0b4a85",
+              "source_values_exact": true
+            },
+            "base": {
+              "dtype": "float64",
+              "shape": [
+                7422,
+                2
+              ],
+              "count": 14844,
+              "byte_offset": 2074608,
+              "byte_length": 118752,
+              "sha256": "c9f09f82082129c9550ec97353d0f81f934a04a6da6ddf80d2572f06a4956c38",
+              "source_dtype": "float64",
+              "source_sha256": "c9f09f82082129c9550ec97353d0f81f934a04a6da6ddf80d2572f06a4956c38",
+              "source_values_exact": true
+            },
+            "outline_points": {
+              "dtype": "float64",
+              "shape": [
+                2564,
+                2
+              ],
+              "count": 5128,
+              "byte_offset": 2193360,
+              "byte_length": 41024,
+              "sha256": "0fb4a7f7cd9515641a5522115f3db6aae840f9811f751c12ce3b81f10c9df6a8",
+              "source_dtype": "float64",
+              "source_sha256": "0fb4a7f7cd9515641a5522115f3db6aae840f9811f751c12ce3b81f10c9df6a8",
+              "source_values_exact": true
+            },
+            "outline_lengths": {
+              "dtype": "uint32",
+              "shape": [
+                30
+              ],
+              "count": 30,
+              "byte_offset": 2234384,
+              "byte_length": 120,
+              "sha256": "ddef6e91b98109e6f84bdf884d9357412eb28b417309df978587fc2756deafa2",
+              "source_dtype": "uint32",
+              "source_sha256": "ddef6e91b98109e6f84bdf884d9357412eb28b417309df978587fc2756deafa2",
+              "source_values_exact": true
+            },
+            "district_points": {
+              "dtype": "float64",
+              "shape": [
+                3761,
+                2
+              ],
+              "count": 7522,
+              "byte_offset": 2234504,
+              "byte_length": 60176,
+              "sha256": "4c64f365b3adaf08a8771922e9b291bfc768db4e3bcb6be3c5284afdf5a7bc37",
+              "source_dtype": "float64",
+              "source_sha256": "4c64f365b3adaf08a8771922e9b291bfc768db4e3bcb6be3c5284afdf5a7bc37",
+              "source_values_exact": true
+            },
+            "district_lengths": {
+              "dtype": "uint32",
+              "shape": [
+                31
+              ],
+              "count": 31,
+              "byte_offset": 2294680,
+              "byte_length": 124,
+              "sha256": "56d09eb375da227580b925ec047a1312799d68f77650941dd4390a4f96f3b215",
+              "source_dtype": "uint32",
+              "source_sha256": "56d09eb375da227580b925ec047a1312799d68f77650941dd4390a4f96f3b215",
+              "source_values_exact": true
+            },
+            "base_positions": {
+              "dtype": "float32",
+              "shape": [
+                14844,
+                3
+              ],
+              "count": 44532,
+              "byte_offset": 2294808,
+              "byte_length": 178128,
+              "sha256": "163bfbcf76e6f573d49169833027019ad5afaac55573f66a0588c1b7ee795c34"
+            },
+            "base_normals": {
+              "dtype": "float32",
+              "shape": [
+                14844,
+                3
+              ],
+              "count": 44532,
+              "byte_offset": 2472936,
+              "byte_length": 178128,
+              "sha256": "80fee5b122beb92b087ee62e98c6493e38b3d5cfe2ff9d2164ed8fa1f5f130e4"
+            },
+            "base_triangles": {
+              "dtype": "uint32",
+              "shape": [
+                19792,
+                3
+              ],
+              "count": 59376,
+              "byte_offset": 2651064,
+              "byte_length": 237504,
+              "sha256": "e19154bcea5b672a52615d0f0225acb33e254cc2cb4465ae2d7aa2b2eb93a693"
+            }
+          }
+        },
+        "vertex_count": 65496,
+        "quad_count": 64167,
+        "width": 7.8217821782178225,
+        "height": 10.0,
+        "frames": {
+          "absolute": [
+            {
+              "url": "assets/geometry/jeju/absolute/2025-a0b57fbda579.npg.gz",
+              "sha256": "a0b57fbda5796c6926a429c3c4de6c54d1cecdb573d9335b9b8954fc1c6ec3ef",
+              "bytes": 1820760,
+              "uncompressed_bytes": 3593456,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    65496
+                  ],
+                  "count": 65496,
+                  "byte_offset": 0,
+                  "byte_length": 261984,
+                  "sha256": "c1e81cf800760da575f7a3ccb79838517e059108740916b6811a9b19dd5ab5f5",
+                  "source_dtype": "float32",
+                  "source_sha256": "c1e81cf800760da575f7a3ccb79838517e059108740916b6811a9b19dd5ab5f5",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    82326,
+                    3
+                  ],
+                  "count": 246978,
+                  "byte_offset": 261984,
+                  "byte_length": 987912,
+                  "sha256": "c34fc3aaed5238845c26a9c12bf450640b91533d9e03f2414a2c8de823018a61",
+                  "source_dtype": "float32",
+                  "source_sha256": "c34fc3aaed5238845c26a9c12bf450640b91533d9e03f2414a2c8de823018a61",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    1962
+                  ],
+                  "count": 1962,
+                  "byte_offset": 1249896,
+                  "byte_length": 7848,
+                  "sha256": "3e1559bffd160023dc1a8c862096864621f90e18104f2ffcb039e38f9547638e",
+                  "source_dtype": "int32",
+                  "source_sha256": "3e1559bffd160023dc1a8c862096864621f90e18104f2ffcb039e38f9547638e",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    1962
+                  ],
+                  "count": 1962,
+                  "byte_offset": 1257744,
+                  "byte_length": 7848,
+                  "sha256": "84bfc036ff532e84da7db0c2e64ed5671cee04bbd244af018be5eb25bdc670d9",
+                  "source_dtype": "float32",
+                  "source_sha256": "84bfc036ff532e84da7db0c2e64ed5671cee04bbd244af018be5eb25bdc670d9",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    128334,
+                    3
+                  ],
+                  "count": 385002,
+                  "byte_offset": 1265592,
+                  "byte_length": 1540008,
+                  "sha256": "be4825bf073cfc543e2c02e32b92510f99f68715b5f70c467bb2cfb3f3cb30e3"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    65496,
+                    3
+                  ],
+                  "count": 196488,
+                  "byte_offset": 2805600,
+                  "byte_length": 785952,
+                  "sha256": "3d46864c9576ff8f684b01903e7c4e7af11ffa6982bfb7a1ea55dc0867371026"
+                }
+              },
+              "year": 2025,
+              "vertex_count": 65496,
+              "index_count": 385002
+            },
+            {
+              "url": "assets/geometry/jeju/absolute/2026-141294aa7fd8.npg.gz",
+              "sha256": "141294aa7fd835813381e0afe54ae8b343bfc504be294cf840d79fa84e0f0414",
+              "bytes": 1853432,
+              "uncompressed_bytes": 3653832,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    65496
+                  ],
+                  "count": 65496,
+                  "byte_offset": 0,
+                  "byte_length": 261984,
+                  "sha256": "fc2a2698c09db0706d2ca666971a85c4496d67a453d40312bc1fe93b6c0437c4",
+                  "source_dtype": "float32",
+                  "source_sha256": "fc2a2698c09db0706d2ca666971a85c4496d67a453d40312bc1fe93b6c0437c4",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    87285,
+                    3
+                  ],
+                  "count": 261855,
+                  "byte_offset": 261984,
+                  "byte_length": 1047420,
+                  "sha256": "f9fa421424518b73b72f07aac5a88f5702efe1ad14851530e61f2d6a241c9b21",
+                  "source_dtype": "float32",
+                  "source_sha256": "f9fa421424518b73b72f07aac5a88f5702efe1ad14851530e61f2d6a241c9b21",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    2070
+                  ],
+                  "count": 2070,
+                  "byte_offset": 1309408,
+                  "byte_length": 8280,
+                  "sha256": "a27fc29ebb684ce35f7bc970fb03077be2f4f481e85fcaa754818a940f148496",
+                  "source_dtype": "int32",
+                  "source_sha256": "a27fc29ebb684ce35f7bc970fb03077be2f4f481e85fcaa754818a940f148496",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    2070
+                  ],
+                  "count": 2070,
+                  "byte_offset": 1317688,
+                  "byte_length": 8280,
+                  "sha256": "2af3d4de902fd959d9ea27869335f8766dcb6cf9ffd4ee83394de363138962d0",
+                  "source_dtype": "float32",
+                  "source_sha256": "2af3d4de902fd959d9ea27869335f8766dcb6cf9ffd4ee83394de363138962d0",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    128334,
+                    3
+                  ],
+                  "count": 385002,
+                  "byte_offset": 1325968,
+                  "byte_length": 1540008,
+                  "sha256": "12dcc6470c75ba3bf46881b16cbe1ac1b2c454ff919cc8752c304e4c7282b3bd"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    65496,
+                    3
+                  ],
+                  "count": 196488,
+                  "byte_offset": 2865976,
+                  "byte_length": 785952,
+                  "sha256": "98c792d793dd35dd5dc8aeb304700f537d2588f9a41f55486f7cd27e19af644a"
+                }
+              },
+              "year": 2026,
+              "vertex_count": 65496,
+              "index_count": 385002
+            }
+          ],
+          "change": [
+            {
+              "url": "assets/geometry/jeju/change/2025-b97983b41934.npg.gz",
+              "sha256": "b97983b419345174558258ac2859daa426f4ec7209f6b0254d3ea8b84648a730",
+              "bytes": 424506,
+              "uncompressed_bytes": 2589808,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    65496
+                  ],
+                  "count": 65496,
+                  "byte_offset": 0,
+                  "byte_length": 261984,
+                  "sha256": "5b2dc61ce3e9af9637e714d6a4b8f0777f18855c7ed700ec6d23002b772e38c0",
+                  "source_dtype": "float32",
+                  "source_sha256": "5b2dc61ce3e9af9637e714d6a4b8f0777f18855c7ed700ec6d23002b772e38c0",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    0,
+                    3
+                  ],
+                  "count": 0,
+                  "byte_offset": 261984,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "float32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    0
+                  ],
+                  "count": 0,
+                  "byte_offset": 261984,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "int32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    0
+                  ],
+                  "count": 0,
+                  "byte_offset": 261984,
+                  "byte_length": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_dtype": "float32",
+                  "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    128334,
+                    3
+                  ],
+                  "count": 385002,
+                  "byte_offset": 261984,
+                  "byte_length": 1540008,
+                  "sha256": "a2a1d7ddf28a34d62c2f25d941705b934e6d7fb2fb5d9368026cc5215865f429"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    65496,
+                    3
+                  ],
+                  "count": 196488,
+                  "byte_offset": 1801992,
+                  "byte_length": 785952,
+                  "sha256": "487d4d242b414d6f9ca40a263ac9491ad9b2eea6bd813dd1956b0a6cf9a6cfe3"
+                }
+              },
+              "year": 2025,
+              "vertex_count": 65496,
+              "index_count": 385002
+            },
+            {
+              "url": "assets/geometry/jeju/change/2026-d8ca7ca7abaf.npg.gz",
+              "sha256": "d8ca7ca7abaf9cb4a702c6537308567f39f015a6079c1edf4161ab416889bce8",
+              "bytes": 1627866,
+              "uncompressed_bytes": 3141656,
+              "arrays": {
+                "z": {
+                  "dtype": "float32",
+                  "shape": [
+                    65496
+                  ],
+                  "count": 65496,
+                  "byte_offset": 0,
+                  "byte_length": 261984,
+                  "sha256": "d75c4731f4c3d0584979c19cb41b82aa721ae4589d475492f750140ec1efe3d7",
+                  "source_dtype": "float32",
+                  "source_sha256": "d75c4731f4c3d0584979c19cb41b82aa721ae4589d475492f750140ec1efe3d7",
+                  "source_values_exact": true
+                },
+                "p": {
+                  "dtype": "float32",
+                  "shape": [
+                    44583,
+                    3
+                  ],
+                  "count": 133749,
+                  "byte_offset": 261984,
+                  "byte_length": 534996,
+                  "sha256": "70b10aed011fbe715daf942ffb720d942dd3563eb2843298f62915b56418d515",
+                  "source_dtype": "float32",
+                  "source_sha256": "70b10aed011fbe715daf942ffb720d942dd3563eb2843298f62915b56418d515",
+                  "source_values_exact": true
+                },
+                "n": {
+                  "dtype": "uint32",
+                  "shape": [
+                    2102
+                  ],
+                  "count": 2102,
+                  "byte_offset": 796984,
+                  "byte_length": 8408,
+                  "sha256": "8efe91bda7e0a1e921cf02aa91c490177ff5a2357ebe34b16cb0e15409f17ed3",
+                  "source_dtype": "int32",
+                  "source_sha256": "8efe91bda7e0a1e921cf02aa91c490177ff5a2357ebe34b16cb0e15409f17ed3",
+                  "source_values_exact": true
+                },
+                "levels": {
+                  "dtype": "float32",
+                  "shape": [
+                    2102
+                  ],
+                  "count": 2102,
+                  "byte_offset": 805392,
+                  "byte_length": 8408,
+                  "sha256": "b6bc817ee780245fe8b6749399dac0cc1d32aa5d06114a477bd4df5f44e929aa",
+                  "source_dtype": "float32",
+                  "source_sha256": "b6bc817ee780245fe8b6749399dac0cc1d32aa5d06114a477bd4df5f44e929aa",
+                  "source_values_exact": true
+                },
+                "triangles": {
+                  "dtype": "uint32",
+                  "shape": [
+                    128334,
+                    3
+                  ],
+                  "count": 385002,
+                  "byte_offset": 813800,
+                  "byte_length": 1540008,
+                  "sha256": "c074d19525d56f27e5e1032ba51b25fb35e610626bf7258dfefd30e5bcb8aa70"
+                },
+                "normals": {
+                  "dtype": "float32",
+                  "shape": [
+                    65496,
+                    3
+                  ],
+                  "count": 196488,
+                  "byte_offset": 2353808,
+                  "byte_length": 785952,
+                  "sha256": "633d442bc55332b542163e74aa349900d8ed942f87bc0098b0259a145ec1e526"
+                }
+              },
+              "year": 2026,
+              "vertex_count": 65496,
+              "index_count": 385002
+            }
+          ]
+        },
+        "camera": {
+          "position": [
+            11,
+            -16,
+            19
+          ],
+          "target_by_mode": {
+            "absolute": [
+              0,
+              0,
+              0.45
+            ],
+            "change": [
+              0,
+              0,
+              0
+            ]
+          },
+          "ortho_width": 18.5,
+          "shift_y": 0.015,
+          "up": [
+            0,
+            0,
+            1
+          ]
+        },
+        "district_anchors": [
+          {
+            "id": "50110",
+            "name": "제주시",
+            "xyz": [
+              -0.608799088124029,
+              -1.6175198444057404,
+              0
+            ]
+          },
+          {
+            "id": "50130",
+            "name": "서귀포시",
+            "xyz": [
+              0.3255451969498893,
+              -2.519099379912305,
+              0
+            ]
+          }
+        ],
+        "scene": {
+          "z_up": true,
+          "floor_z": {
+            "absolute": -1.1,
+            "change": -2.6
+          },
+          "base_visible": {
+            "absolute": true,
+            "change": false
+          },
+          "outline_z": {
+            "absolute": -0.06,
+            "change": 0
+          },
+          "district_line_z": {
+            "absolute": -0.059,
+            "change": -0.004
+          },
+          "extent_frame_z": -0.12,
+          "north_marker_z": -0.11,
+          "body": {
+            "color": [
+              0.028,
+              0.019,
+              0.012
+            ],
+            "metalness": 0.72,
+            "roughness": 0.34
+          },
+          "lights": [
+            {
+              "position": [
+                -5,
+                -1,
+                9
+              ],
+              "color": [
+                1,
+                0.69,
+                0.43
+              ],
+              "power": 1100,
+              "size": 9
+            },
+            {
+              "position": [
+                2,
+                7,
+                8
+              ],
+              "color": [
+                0.42,
+                0.61,
+                1
+              ],
+              "power": 1400,
+              "size": 8
+            },
+            {
+              "position": [
+                6,
+                1,
+                5
+              ],
+              "color": [
+                1,
+                0.8,
+                0.58
+              ],
+              "power": 850,
+              "size": 5
+            }
+          ]
+        }
+      }
     }
   ],
   "location_map_url": "assets/location_map.png",
@@ -2424,5 +4602,15 @@
       ]
     }
   ],
-  "repository_url": "https://github.com/hojinandys/night-print"
+  "repository_url": "https://github.com/hojinandys/night-print",
+  "webgl": {
+    "version": 1,
+    "format": "NPG3D001",
+    "compression": "gzip",
+    "validation_url": "assets/geometry/validation.json",
+    "source_values_exact": true,
+    "blender_version": "4.4.0",
+    "geometry_note": "Original mesh heights, XY, all polygon components and contours; no mesh decimation. GPU float32 conversion matches Blender.",
+    "total_bytes": 13440194
+  }
 }

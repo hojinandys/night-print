@@ -38,7 +38,7 @@ jobs:
         env:
           EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
         run: python pipeline/build_recent.py plan --github-output "$GITHUB_OUTPUT"
-      - name: Test independent monthly publication
+      - name: Test monthly publication and incomplete 3D rejection
         run: python -m unittest discover -s tests -p test_build_recent.py -v
       - name: Retain the existing edition without download credentials
         if: steps.detect.outputs.needs_build == 'true' && steps.detect.outputs.credentials_available != 'true'
@@ -83,7 +83,7 @@ jobs:
       - name: Build and safely replace only the recent edition
         if: steps.detect.outputs.needs_build == 'true' && steps.detect.outputs.credentials_available == 'true'
         run: python pipeline/build_recent.py build --blender /tmp/blender-4.4.0-linux-x64/blender --cpu
-      - name: Validate and preserve both published editions
+      - name: Validate both editions and 3D before preserving publication
         id: ready
         run: |
           python pipeline/update.py validate
