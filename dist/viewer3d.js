@@ -160,7 +160,7 @@ export class ReliefViewer {
   constructor(host, { onSelect, onError, onMove, onView } = {}) {
     this.host = host; this.onSelect = onSelect; this.onError = onError; this.onMove = onMove; this.onView = onView;
     this.active = true; this.dirty = true; this.contextLost = false; this.generation = 0; this.markersVisible = false; this.markerNodes = [];
-    this.comparing = false; this.qualityVisible = false; this.interaction = null;
+    this.comparing = false; this.qualityVisible = false; this.interaction = null; this.placeLocation = null;
     this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -356,12 +356,38 @@ export class ReliefViewer {
     }
     this.select(this.selected); this.setMarkersVisible(this.markersVisible);
   }
+  setPlaceLocation(location) {
+    this.placeLocation = location;
+    for (const item of this.markerNodes.filter((entry) => entry.kind === 'place')) item.button.remove();
+    this.markerNodes = this.markerNodes.filter((entry) => entry.kind !== 'place');
+    if (location && this.sampler && Array.isArray(location.point) && location.point.length === 2 && location.point.every(Number.isFinite)) {
+      for (const [pane, sampler] of (this.comparing ? [this.sampler, this.secondSampler] : [this.sampler]).entries()) {
+        if (!sampler) continue;
+        const [x, y] = location.point, height = sampler.height(x, y);
+        const position = new THREE.Vector3(x, y, (height ?? 0) + .12);
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'hotspot place-hotspot selected';
+        button.setAttribute('aria-label', `${location.label} 위치로 이동${height === null ? '. 이 점의 관측 표면이 없어 기준면 위치를 표시합니다' : ''}`);
+        const name = document.createElement('span'); name.textContent = location.label; button.append(name);
+        button.addEventListener('click', () => this.focusPlace()); this.markerLayer.append(button);
+        this.markerNodes.push({ kind: 'place', id: `place:${location.id}`, position, button, pane });
+      }
+    }
+    this.projectMarkers(); this.dirty = true;
+  }
+  focusPlace() {
+    const points = this.markerNodes.filter((item) => item.kind === 'place');
+    if (!points.length) return;
+    const target = points[0].position.clone();
+    target.z = points.reduce((sum, item) => sum + item.position.z, 0) / points.length;
+    const offset = this.camera.position.clone().sub(this.controls.target);
+    this.move(target.clone().add(offset), target, Math.max(2.4, this.camera.zoom), true);
+  }
   projectMarkers() {
     const panes = this.panes();
     let anyVisible = false;
     for (const item of this.markerNodes) {
       const p = item.position.clone().project(this.camera), pane = panes[item.pane];
-      const allowed = this.markersVisible || item.id === this.selected;
+      const allowed = item.kind === 'place' || this.markersVisible || item.id === this.selected;
       const visible = allowed && pane && p.z >= -1 && p.z <= 1 && Math.abs(p.x) < .99 && Math.abs(p.y) < .99;
       item.button.hidden = !visible;
       anyVisible ||= !!visible;
@@ -426,7 +452,7 @@ export class ReliefViewer {
   }
   select(id) {
     this.selected = id ? String(id) : null;
-    for (const item of this.markerNodes) { const active = item.id === this.selected; item.button.classList.toggle('selected', active); item.button.setAttribute('aria-pressed', String(active)); }
+    for (const item of this.markerNodes) { const active = item.kind === 'place' || item.id === this.selected; item.button.classList.toggle('selected', active); if (item.kind !== 'place') item.button.setAttribute('aria-pressed', String(active)); }
     this.buildSelection(this.selection, this.sampler); this.buildSelection(this.secondarySelection, this.secondSampler); this.projectMarkers(); this.dirty = true;
   }
   focus(id) {

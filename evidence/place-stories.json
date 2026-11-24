@@ -1,0 +1,399 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "id": "dunchon",
+      "title": "빛이 줄어든 자리에 무슨 일이 있었을까",
+      "region": "seoul",
+      "fromYear": 2017,
+      "toYear": 2019,
+      "location": {
+        "label": "둔촌주공 일대",
+        "lonLat": [
+          127.14054572844778,
+          37.52305305589195
+        ],
+        "anchorNote": "현재 포레온 307동 어린이집의 좌표를 위치 확인점으로 사용했다. 과거 단지의 중심이나 경계가 아니다.",
+        "sourceTitle": "강동구 어린이집 정보 · 포레온키즈어린이집",
+        "sourceUrl": "https://data.gd.go.kr/openinf/sheetview.jsp?infId=OA-20325",
+        "utm": [
+          335685.7251080347,
+          4154523.2267175135
+        ],
+        "boundsUtm": [
+          335000,
+          4154000,
+          336500,
+          4155500
+        ]
+      },
+      "event": {
+        "date": "2017–2019 · 이주와 철거",
+        "years": [
+          2017,
+          2018,
+          2019
+        ],
+        "fact": "서울기록원은 둔촌주공의 2017–2018년 주민 이주와 2019년 철거를 기록하고 있다. 사람이 살던 단지가 재건축 현장으로 바뀌던 시기다.",
+        "sources": [
+          {
+            "title": "서울기록원 · 둔촌주공아파트 기록 컬렉션",
+            "url": "https://archives.seoul.go.kr/research-guide/440"
+          },
+          {
+            "title": "강동구 · 재건축 앞둔 둔촌주공 이주 안내 (2017.06.26)",
+            "url": "https://www.gangdong.go.kr/web/newportal/press/7256"
+          }
+        ]
+      },
+      "interpretation": "빛이 낮아진 시기와 주민 이주·철거 시기가 겹친다. 이곳의 어두워짐은 도시의 쇠퇴보다, 사람이 살던 공간이 잠시 비워지는 과정과 함께 읽어볼 수 있다.",
+      "limits": "이주가 빛 감소의 원인이라고 증명한 것은 아니다. 주변 주거지·도로·공사 조명이 함께 관측된다. 사각 범위 중 서울 경계 밖 부분은 계산에서 제외했다. 기록물마다 세부 일정에 차이가 있어 사건은 2017–2019년의 범위로 표시했다.",
+      "question": "어두워졌다는 이유만으로, 이곳이 쇠퇴했다고 말할 수 있을까?",
+      "observation": {
+        "scopeLabel": "둔촌주공 일대 · 고정 1.5 × 1.5 km 범위",
+        "series": [
+          {
+            "year": 2015,
+            "mean": 52.00817873
+          },
+          {
+            "year": 2016,
+            "mean": 50.43349419
+          },
+          {
+            "year": 2017,
+            "mean": 53.04992623
+          },
+          {
+            "year": 2018,
+            "mean": 47.80918892
+          },
+          {
+            "year": 2019,
+            "mean": 46.3799745
+          },
+          {
+            "year": 2020,
+            "mean": 47.93150063
+          },
+          {
+            "year": 2021,
+            "mean": 49.30912884
+          },
+          {
+            "year": 2022,
+            "mean": 49.86286295
+          },
+          {
+            "year": 2023,
+            "mean": 44.94370603
+          }
+        ],
+        "coveragePct": 91.011538,
+        "commonCoveragePct": 100.0,
+        "areaKm2": 2.0477596,
+        "squareAreaKm2": 2.25,
+        "boundaryAreaKm2": 2.0477596,
+        "cellCount": 9,
+        "units": "nW/cm²/sr",
+        "mask": "same edition-wide common mask and region-intersection weights",
+        "sourceHash": "eef17b77e1c0cbaddf342396358eeb0516c04ad26c375e63eeb26f6300cb544c"
+      },
+      "basis": {
+        "years": [
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023
+        ],
+        "doi": "10.5258/SOTON/WP00772",
+        "interactionHash": "09145176e4f15d991ccf78a1823eb8e50a01ebbf735ed73885331167b25d16ba",
+        "reviewedOn": "2026-11-24"
+      },
+      "sensitivity": [
+        {
+          "sideMeters": 1000,
+          "change": -9.90226936,
+          "coveragePct": 100.0
+        },
+        {
+          "sideMeters": 1500,
+          "change": -6.66995173,
+          "coveragePct": 91.011538
+        },
+        {
+          "sideMeters": 2000,
+          "change": -3.06356179,
+          "coveragePct": 88.377545
+        }
+      ]
+    },
+    {
+      "id": "osiria",
+      "title": "문을 열기 전부터 밝아지던 곳",
+      "region": "busan",
+      "fromYear": 2015,
+      "toYear": 2023,
+      "location": {
+        "label": "오시리아 테마파크 일대",
+        "lonLat": [
+          129.212969847948,
+          35.1960278870537
+        ],
+        "anchorNote": "한국관광공사의 롯데월드 어드벤처 부산 안내 좌표. 관광단지 전체의 중심이나 경계가 아니다.",
+        "sourceTitle": "한국관광공사 · 롯데월드 어드벤처 부산",
+        "sourceUrl": "https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=32000",
+        "utm": [
+          519387.4052161024,
+          3894802.931810888
+        ],
+        "boundsUtm": [
+          518500,
+          3894000,
+          520000,
+          3895500
+        ]
+      },
+      "event": {
+        "date": "2022.03.31 · 테마파크 개장",
+        "years": [
+          2022
+        ],
+        "fact": "부산시는 오시리아 관광단지의 롯데월드 어드벤처 부산이 2022년 3월 31일 개장한다고 발표했다. 같은 자료에는 2015년 개장한 국립부산과학관 등 관광단지가 단계적으로 조성된 과정도 나온다.",
+        "sources": [
+          {
+            "title": "부산시 · 오시리아 관광단지 내 테마파크 개장 (2022.03.30)",
+            "url": "https://www.busan.go.kr/nbtnewsBU/1523431?curPage=1&srchBeginDt=&srchEndDt=&srchKey=&srchText="
+          }
+        ]
+      },
+      "interpretation": "이 일대의 빛은 테마파크가 문을 연 2022년 이전부터 높아졌다. 완성된 시설의 개장일만 보기보다, 공사와 주변 시설이 들어서는 시간을 함께 살펴볼 필요가 있다. 2023년에는 전년보다 낮아져 증가가 계속 이어지지도 않는다.",
+      "limits": "사각 범위는 오시리아 전체가 아니라 테마파크 주변 일부다. 밝기 증가를 특정 시설의 효과나 방문객·매출 증가로 볼 수 없다. 새벽 관측이므로 놀이시설의 저녁 영업 조명을 직접 측정했다고도 말할 수 없다.",
+      "question": "도시의 변화는 개장일에 시작될까, 그보다 먼저 시작될까?",
+      "observation": {
+        "scopeLabel": "오시리아 테마파크 일대 · 고정 1.5 × 1.5 km 범위",
+        "series": [
+          {
+            "year": 2015,
+            "mean": 20.58339924
+          },
+          {
+            "year": 2016,
+            "mean": 32.01571571
+          },
+          {
+            "year": 2017,
+            "mean": 37.05054368
+          },
+          {
+            "year": 2018,
+            "mean": 34.16815111
+          },
+          {
+            "year": 2019,
+            "mean": 36.25923443
+          },
+          {
+            "year": 2020,
+            "mean": 39.77048948
+          },
+          {
+            "year": 2021,
+            "mean": 40.9394491
+          },
+          {
+            "year": 2022,
+            "mean": 41.35440212
+          },
+          {
+            "year": 2023,
+            "mean": 38.13802168
+          }
+        ],
+        "coveragePct": 100.0,
+        "commonCoveragePct": 100.0,
+        "areaKm2": 2.25,
+        "squareAreaKm2": 2.25,
+        "boundaryAreaKm2": 2.25,
+        "cellCount": 9,
+        "units": "nW/cm²/sr",
+        "mask": "same edition-wide common mask and region-intersection weights",
+        "sourceHash": "7e778e85d820e3292c51d0e05bb83d4e7140c2861f330c613efccac59d1d2eb2"
+      },
+      "basis": {
+        "years": [
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023
+        ],
+        "doi": "10.5258/SOTON/WP00772",
+        "interactionHash": "95a5bf62702529e6091ca8053130a2d8b3fa71bab2847edfc7221d2ce87585a8",
+        "reviewedOn": "2026-11-24"
+      },
+      "sensitivity": [
+        {
+          "sideMeters": 1000,
+          "change": 17.62788153,
+          "coveragePct": 100.0
+        },
+        {
+          "sideMeters": 1500,
+          "change": 17.55462244,
+          "coveragePct": 100.0
+        },
+        {
+          "sideMeters": 2000,
+          "change": 13.6412541,
+          "coveragePct": 93.75
+        }
+      ]
+    },
+    {
+      "id": "shinhwa",
+      "title": "새로 켜진 빛은 계속 커질까",
+      "region": "jeju",
+      "fromYear": 2016,
+      "toYear": 2018,
+      "location": {
+        "label": "제주 신화월드 일대",
+        "lonLat": [
+          126.31521554103088,
+          33.30525966712617
+        ],
+        "anchorNote": "제주관광공사의 신화테마파크 안내 좌표. 리조트 전체 중심이나 사업 경계가 아니다.",
+        "sourceTitle": "제주관광공사 VisitJeju · 신화테마파크",
+        "sourceUrl": "https://m.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000022771",
+        "utm": [
+          250029.23998471617,
+          3688346.1741105723
+        ],
+        "boundsUtm": [
+          249500,
+          3687500,
+          251000,
+          3689000
+        ]
+      },
+      "event": {
+        "date": "2017–2018 · 단계별 개장",
+        "years": [
+          2017,
+          2018
+        ],
+        "fact": "제주 신화월드는 2015년 공사를 시작했다. 운영사 공시는 2017년 4월 서머셋 개장과 2018년 3월 22일 리조트 그랜드 오픈을 기록한다.",
+        "sources": [
+          {
+            "title": "운영사 공시 · 서머셋 개장 (2017.04.25)",
+            "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2017/0425/ltn201704251543.pdf"
+          },
+          {
+            "title": "운영사 · 그랜드 오픈 (2018.03.22)",
+            "url": "https://shw.com.hk/en/ir_press_detail.php?id=30198"
+          },
+          {
+            "title": "운영사 · 사업 연혁",
+            "url": "https://www.shw.com.hk/en/bus_overview.php"
+          }
+        ]
+      },
+      "interpretation": "개장 전후로 빛이 크게 높아졌지만, 2018년 정점 이후에는 그보다 낮은 수준을 보이며 중간에 소폭 반등하기도 한다. 새로운 시설이 들어서는 순간과, 그 뒤에 빛이 유지되는 방식은 다른 이야기일 수 있다. 상승과 하락을 한 줄의 성공·실패로 바꾸기보다 그 차이를 남겨두었다.",
+      "limits": "초기 값이 작아 증가율이 크게 보인다. 2015–2016년은 이미 공사 중이며 개발 이전의 자연 상태가 아니다. 호텔·도로·주차장 등이 함께 관측되므로, 이후 감소를 폐업이나 매출 하락으로 해석할 근거는 없다.",
+      "question": "빛이 줄었다는 사실과, 그 장소의 가치가 줄었다는 말은 같을까?",
+      "observation": {
+        "scopeLabel": "제주 신화월드 일대 · 고정 1.5 × 1.5 km 범위",
+        "series": [
+          {
+            "year": 2015,
+            "mean": 1.24431217
+          },
+          {
+            "year": 2016,
+            "mean": 2.00150192
+          },
+          {
+            "year": 2017,
+            "mean": 15.69773674
+          },
+          {
+            "year": 2018,
+            "mean": 34.1050627
+          },
+          {
+            "year": 2019,
+            "mean": 23.71852281
+          },
+          {
+            "year": 2020,
+            "mean": 20.03610251
+          },
+          {
+            "year": 2021,
+            "mean": 22.51327229
+          },
+          {
+            "year": 2022,
+            "mean": 23.00582324
+          },
+          {
+            "year": 2023,
+            "mean": 18.79823038
+          }
+        ],
+        "coveragePct": 100.0,
+        "commonCoveragePct": 100.0,
+        "areaKm2": 2.25,
+        "squareAreaKm2": 2.25,
+        "boundaryAreaKm2": 2.25,
+        "cellCount": 9,
+        "units": "nW/cm²/sr",
+        "mask": "same edition-wide common mask and region-intersection weights",
+        "sourceHash": "08882c9135306bebfc48c17e0498f156b022926d99df51ecda42e24f0c9e506e"
+      },
+      "basis": {
+        "years": [
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023
+        ],
+        "doi": "10.5258/SOTON/WP00772",
+        "interactionHash": "57c57a5f3d20e83c7974c85e3e26998296ffa31fd0296a6636f81ccedcf1135d",
+        "reviewedOn": "2026-11-24"
+      },
+      "sensitivity": [
+        {
+          "sideMeters": 1000,
+          "change": 41.0818176,
+          "coveragePct": 100.0
+        },
+        {
+          "sideMeters": 1500,
+          "change": 32.10356078,
+          "coveragePct": 100.0
+        },
+        {
+          "sideMeters": 2000,
+          "change": 20.84931329,
+          "coveragePct": 100.0
+        }
+      ]
+    }
+  ],
+  "method": "공식 위치 확인점에서 각 축 750 m를 뺀 뒤 가장 가까운 500 m 격자선에 맞춘 고정 정사각형. 같은 사각형과 9년 공통 마스크에 지역 경계 교차면적을 가중해 연평균 복사휘도를 계산. 범위는 값의 크기로 최적화하지 않았다. 사각형은 시설의 공식 경계가 아니며 500 m 칸도 독립적인 원관측을 뜻하지 않는다."
+}

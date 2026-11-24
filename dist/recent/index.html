@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#080b10">
   <meta name="description" content="서울·부산·제주의 공개 야간광으로 읽는 데이터 아트. 빛이 늘어난 곳과 줄어든 곳을 직접 돌아봅니다.">
   <title>밤의 지문 — 평균이 지운 자리</title>
-  <link rel="stylesheet" href="./style.css?v=5c82677d036f">
+  <link rel="stylesheet" href="./style.css?v=b60acc3e2c21">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-  <script src="./app.js?v=e3c15f69484a" type="module"></script>
+  <script src="./app.js?v=891f9791dbef" type="module"></script>
 </head>
 <body>
   <a class="skip-link" href="#artwork">작품으로 이동</a>
@@ -74,6 +74,11 @@
       <div id="comparison" class="comparison" hidden aria-label="세 지역 같은 시점 비교"></div>
       <div id="overview-timeline"></div>
 
+      <section id="place-stories" class="place-stories" aria-labelledby="place-stories-title" hidden>
+        <div class="place-stories-heading"><h2 id="place-stories-title">장소의 변화</h2><p>주변의 빛과 그곳의 기록을 함께 읽습니다.</p></div>
+        <div id="place-story-choices" class="place-story-choices" role="group" aria-label="장소 사례 선택"></div>
+      </section>
+
       <div id="region-detail" class="region-detail" hidden>
         <div class="detail-art">
           <div class="detail-topline"><span id="detail-label">서울</span><button id="reset-view" type="button" hidden>전체 형태로</button></div>
@@ -94,12 +99,20 @@
           <div id="detail-timeline"></div>
         </div>
         <aside id="place-panel" class="place-panel" aria-labelledby="place-title">
-          <p class="panel-eyebrow">지역 기록</p>
+          <p id="place-panel-kind" class="panel-eyebrow">지역 기록</p>
           <label class="select-label" for="district-select">구·군·시 선택</label>
           <div class="select-wrap"><select id="district-select"><option value="">전체 지역</option></select></div>
           <h2 id="place-title">서울특별시</h2>
           <p id="place-context" class="place-context">같은 관측 영역을 고정한 면적 가중 평균</p>
           <section class="locator-panel" aria-labelledby="map-title"><div class="locator-heading"><h3 id="map-title">같은 자리의 지도</h3><span>↑ N</span></div><div id="linked-map" class="linked-map"></div><img id="region-map" alt="북쪽이 위인 지역 행정 경계 지도" loading="lazy" hidden><p id="map-status" role="status">지도에서 구역을 선택하면 입체에서도 같은 경계가 나타납니다.</p><button id="retry-map" class="retry-map" type="button" hidden>지도 다시 불러오기</button></section>
+          <section id="place-case-summary" class="place-case-summary" aria-label="선택한 장소 주변의 변화" hidden>
+            <p id="place-case-period" class="place-case-period"></p>
+            <div class="place-case-change"><strong id="place-case-change"></strong><span class="unit">nW/cm²/sr</span></div>
+            <p id="place-case-percent" class="place-case-percent"></p>
+            <dl class="place-case-values"><div><dt id="place-case-from-label"></dt><dd id="place-case-from"></dd></div><div><dt id="place-case-to-label"></dt><dd id="place-case-to"></dd></div></dl>
+            <p id="place-case-scope" class="place-case-scope"></p>
+            <button id="place-case-read" type="button">기록과 해석 읽기 ↓</button>
+          </section>
           <div class="place-main-value"><span id="place-value">—</span><span class="unit">nW/cm²/sr</span></div>
           <p id="place-value-label" class="metric-caption">평균 복사휘도</p>
           <dl id="pair-values" class="pair-values" hidden><div><dt id="pair-value-a-label">A</dt><dd id="pair-value-a">—</dd></div><div><dt id="pair-value-b-label">B</dt><dd id="pair-value-b">—</dd></div></dl>
@@ -114,6 +127,16 @@
           <section id="quality-panel" class="quality-panel" aria-labelledby="quality-title" hidden><h3 id="quality-title">어디까지 관측했을까</h3><p id="quality-coverage"></p><div class="quality-legend"><span><i class="observed-key"></i>공통 관측</span><span><i class="missing-key"></i>공통 관측 제외</span></div><p id="quality-zero"></p><label for="change-threshold">작은 차이의 기준 <select id="change-threshold"><option value="0.1">± 0.1</option><option value="0.5" selected>± 0.5</option><option value="1">± 1.0</option></select></label><p id="quality-difference"></p><p class="quality-caution">단위: nW/cm²/sr. 이 기준은 차이의 크기를 읽는 보조선이며, 통계적 유의성이나 센서 오차 한계가 아닙니다. 공통 관측 제외는 실제 값 0과 다릅니다.</p></section>
         </aside>
       </div>
+
+      <section id="place-story-panel" class="place-story-panel" aria-labelledby="place-story-title" hidden>
+        <div class="place-story-heading"><div><p id="place-story-period" class="panel-eyebrow"></p><h2 id="place-story-title" tabindex="-1"></h2><p id="place-story-location" class="place-story-location"></p></div><button id="place-story-close" type="button">자유롭게 감상</button></div>
+        <div class="place-story-body">
+          <section class="place-story-observation"><h3>관측된 변화</h3><p id="place-story-observation"></p><p id="place-story-scope" class="place-story-note"></p><div id="place-story-chart" class="place-story-chart" role="img"></div><p id="place-story-chart-note" class="place-story-note"></p><details class="place-story-table-wrap"><summary>연도별 관측값 보기</summary><table id="place-story-table"></table></details></section>
+          <section><h3>공식 기록</h3><p id="place-story-event"></p><ul id="place-story-sources" class="place-story-sources"></ul><p id="place-story-anchor-note" class="place-story-note"></p></section>
+          <section><h3>함께 생각할 점</h3><p id="place-story-interpretation"></p><p id="place-story-question" class="place-story-question"></p></section>
+          <section class="place-story-limits"><h3>해석의 범위</h3><p id="place-story-limits"></p></section>
+        </div>
+      </section>
 
       <div id="timeline" class="timeline" hidden>
         <div class="timeline-top"><button id="play-years" class="play-button" type="button" aria-label="관측 재생"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5 19 12 8 18.5Z" fill="currentColor"/></svg><span>관측 재생</span></button><p id="timeline-caption">같은 관측 영역 · 같은 높이 규칙</p><output id="selected-year" for="year-slider">—</output></div>
