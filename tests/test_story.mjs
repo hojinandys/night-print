@@ -1,136 +1,134 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createGuide } from '../dist/story.mjs';
+import { createGuide, guideScene } from '../dist/story.mjs';
 
-const annual = JSON.parse(readFileSync(new URL('../dist/data/manifest.json', import.meta.url)));
-const monthly = JSON.parse(readFileSync(new URL('../dist/recent/data/manifest.json', import.meta.url)));
-// Fixed real observation snapshots for regression expectations. The live
-// manifests above may change when a new observation is published.
-const annualSnapshot = JSON.parse(readFileSync(new URL('../dist/history/605ffbb1b8dc273d8291/manifest.json', import.meta.url)));
-const monthlySnapshot = JSON.parse(readFileSync(new URL('../dist/recent/history/652e6cc3072426d16333/manifest.json', import.meta.url)));
+const read = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
+const annual = read('../dist/data/manifest.json');
+const monthly = read('../dist/recent/data/manifest.json');
+// Fixed observations protect numerical expectations while the live editions grow.
+const annualSnapshot = read('../dist/history/605ffbb1b8dc273d8291/manifest.json');
+const monthlySnapshot = read('../dist/recent/history/652e6cc3072426d16333/manifest.json');
 const serialized = (guide) => guide.chapters.map((chapter) => chapter.title + ' ' + chapter.body).join('\n');
-const entity = (id, from, to, area = 25, coverage = 100) => ({ id, name: id, label: id,
-  coverage_pct: coverage, series: [{ year: 2020, mean: from, decreased_area_pct: 0 },
+const entity = (id, from, to, area = 25) => ({ id, name: id, label: id,
+  series: [{ year: 2020, mean: from, decreased_area_pct: 0 },
     { year: 2021, mean: to, decreased_area_pct: area }] });
-const fixture = (region, districts) => ({ years: [2020, 2021], baseline_year: 2020,
-  units: 'nW/cm²/sr', regions: [{ ...region, districts }] });
+const fixture = (...regions) => ({ years: [2020, 2021], baseline_year: 2020,
+  units: 'nW/cm²/sr', regions });
 
 for (const [edition, manifest] of [['annual', annual], ['monthly', monthly]]) {
-  for (const regionId of ['seoul', 'busan', 'jeju']) {
-    test(`${edition} ${regionId}: respects the chosen region and cites its observations`, () => {
+  for (const regionId of ['all', 'seoul', 'busan', 'jeju']) {
+    test(`${edition} ${regionId}: actual observations and free choice of place`, () => {
       const original = JSON.stringify(manifest), guide = createGuide(manifest, regionId);
-      const region = manifest.regions.find((item) => item.id === regionId);
+      const regions = regionId === 'all' ? manifest.regions : manifest.regions.filter((item) => item.id === regionId);
       assert.equal(guide.region, regionId);
+      assert.equal(guide.district, null);
       assert.equal(guide.chapters.length, 4);
-      assert.ok(region.districts.some((item) => item.id === guide.district && item.coverage_pct >= 85));
-      assert.match(guide.chapters[0].title, new RegExp(region.label));
-      assert.ok(guide.chapters[0].body.includes(region.series[0].mean.toFixed(2)));
-      assert.ok(guide.chapters[0].body.includes(region.series.at(-1).mean.toFixed(2)));
-      assert.ok(guide.chapters[1].body.includes(region.series.at(-1).decreased_area_pct.toFixed(1) + '%'));
-      assert.match(guide.chapters[3].body, /실제 관측/);
-      assert.match(guide.chapters[3].body, /비교 끄기/);
+      for (const region of regions) {
+        assert.ok(guide.chapters[0].body.includes(region.label));
+        if (regionId !== 'all') {
+          assert.ok(guide.chapters[0].body.includes(region.series[0].mean.toFixed(2)));
+          assert.ok(guide.chapters[0].body.includes(region.series.at(-1).mean.toFixed(2)));
+        }
+        assert.ok(guide.chapters[1].body.includes(region.series.at(-1).decreased_area_pct.toFixed(1) + '%'));
+      }
+      assert.match(guide.chapters[3].body, /다시 전체.*어떤 말로 설명/);
+      assert.doesNotMatch(serialized(guide), /NaN|undefined|Infinity|종로구|동구/);
       assert.equal(JSON.stringify(manifest), original);
-      assert.doesNotMatch(serialized(guide), /NaN|undefined|Infinity/);
+      for (let step = 0; step < 4; step++) {
+        const scene = guideScene(guide, step, manifest.years);
+        assert.equal(scene.region, regionId);
+        assert.equal(scene.compare, false);
+        assert.equal(scene.district, null);
+        assert.equal(scene.zoom, false);
+        assert.equal(scene.yearIndex, manifest.years.length - 1);
+      }
+      assert.equal(guideScene(guide, 0, manifest.years).mode, 'absolute');
+      assert.equal(guideScene(guide, 3, manifest.years).mode, 'change');
       if (edition === 'monthly') {
         const start = `${manifest.baseline_year}년 ${manifest.period.month}월`;
         const end = `${manifest.years.at(-1)}년 ${manifest.period.month}월`;
         assert.ok(guide.chapters[0].body.includes(start));
         assert.ok(guide.chapters[0].body.includes(end));
+        assert.doesNotMatch(serialized(guide), /매년|2015년|2023년/);
       }
     });
   }
 }
 
-test('all-region guide has a deterministic Seoul starting point, explicit unknown region is rejected', () => {
-  assert.equal(createGuide(annual, 'all').region, 'seoul');
-  assert.equal(createGuide(annual).region, 'seoul');
+test('overview never silently switches to Seoul and unknown regions are rejected', () => {
+  assert.equal(createGuide(annual).region, 'all');
+  assert.equal(createGuide(annual, null).region, 'all');
   assert.throws(() => createGuide(annual, 'not-a-region'), /selected guide region/);
 });
 
-test('archived annual counterexamples remain in Seoul and Busan, not an invented Jeju decline', () => {
-  assert.equal(createGuide(annualSnapshot, 'seoul').district, '11110');
-  const busan = createGuide(annualSnapshot, 'busan');
-  assert.equal(busan.district, '26170');
-  assert.equal(busan.counterexample, true);
-  assert.match(busan.chapters[2].body, /\+20\.0%.*-4\.6%/);
-  const jeju = createGuide(annualSnapshot, 'jeju');
-  assert.equal(jeju.counterexample, false);
-  assert.match(jeju.chapters[2].body, /제주시 \+34\.1%, 서귀포시 \+65\.9%/);
-  assert.match(jeju.chapters[2].body, /6\.0%/);
+test('archived annual overview grounds the story in all three regions', () => {
+  const guide = createGuide(annualSnapshot);
+  assert.match(guide.chapters[0].body, /서울.*\+14\.1%.*부산.*\+20\.0%.*제주.*\+44\.5%/);
+  assert.match(guide.chapters[1].body, /21\.2%.*20\.0%.*5\.2%/);
+  assert.match(guide.chapters[2].body, /부산은.*9개 연도.*매년.*20\.0%/);
+  assert.match(guide.chapters[2].body, /서울 \+6\.14, 부산 \+4\.06, 제주 \+1\.10/);
 });
 
-test('archived monthly Busan and Jeju distinguish rising means from lower positions', () => {
-  const busan = createGuide(monthlySnapshot, 'busan');
-  assert.equal(busan.counterexample, false);
-  assert.equal(busan.district, '26320');
-  assert.match(busan.chapters[2].body, /모두 높아졌습니다/);
-  assert.match(busan.chapters[2].body, /46\.6%/);
-  const jeju = createGuide(monthlySnapshot, 'jeju');
-  assert.equal(jeju.district, '50130');
-  assert.equal(jeju.counterexample, false);
-  assert.match(jeju.chapters[2].body, /39\.2%/);
+test('monthly snapshot uses its own observations without importing the annual story', () => {
+  const guide = createGuide(monthlySnapshot);
+  for (const region of monthlySnapshot.regions) {
+    const first = region.series[0].mean, last = region.series.at(-1).mean;
+    assert.ok(guide.chapters[0].body.includes(((last - first) / first * 100).toFixed(1) + '%'));
+  }
+  assert.doesNotMatch(serialized(guide), /매년|9개 연도|14\.1%|20\.0%|44\.5%/);
 });
 
-test('a later monthly fixture uses its own month and observed years', () => {
-  const manifest = fixture(entity('later', 10, 12), [entity('place', 5, 6)]);
+test('a later monthly edition uses its own month and observed years', () => {
+  const manifest = fixture(entity('later', 10, 12));
   manifest.period = { kind: 'monthly_same_month', month: 11 };
   const guide = createGuide(manifest, 'later');
   assert.match(guide.chapters[0].body, /2020년 11월.*2021년 11월/);
-  assert.doesNotMatch(serialized(guide), /2025년|2026년|10월/);
+  assert.doesNotMatch(serialized(guide), /2025년|2026년|10월|매년/);
 });
 
-test('zero starting mean uses an absolute difference, not a fabricated percentage', () => {
-  const guide = createGuide(fixture(entity('zero', 0, 2), [entity('place', 0, 1)]), 'zero');
+test('zero starting mean uses an absolute difference without an infinite percentage', () => {
+  const guide = createGuide(fixture(entity('zero', 0, 2)), 'zero');
   assert.match(guide.chapters[0].body, /평균 차이는 \+2\.00 nW/);
   assert.doesNotMatch(serialized(guide), /NaN|Infinity|undefined/);
 });
 
-test('unchanged mean does not claim every position stayed unchanged', () => {
-  const guide = createGuide(fixture(entity('same', 10, 10, 45), [entity('place', 5, 5, 50)]), 'same');
+test('unchanged mean does not assert unchanged places', () => {
+  const guide = createGuide(fixture(entity('same', 10, 10, 45)), 'same');
   assert.match(guide.chapters[0].title, /같습니다/);
-  assert.match(guide.chapters[2].body, /50\.0%/);
-  assert.equal(guide.counterexample, false);
+  assert.match(guide.chapters[1].body, /45\.0%/);
   assert.doesNotMatch(serialized(guide), /모두 높아졌습니다|모든.*같습니다/);
 });
 
-test('no measured lower area does not narrate a hidden decline', () => {
-  const guide = createGuide(fixture(entity('rising', 10, 12, 0), [entity('place', 5, 6, 0)]), 'rising');
-  assert.equal(guide.counterexample, false);
-  assert.match(guide.chapters[2].body, /낮아진 면적은 0\.0%/);
-  assert.doesNotMatch(guide.chapters[2].title, /남은 감소/);
+test('zero or missing lower-area values are not invented declines', () => {
+  const zero = createGuide(fixture(entity('rising', 10, 12, 0)), 'rising');
+  assert.match(zero.chapters[1].body, /낮아진 면적은.*0\.0%/);
+  assert.doesNotMatch(zero.chapters[3].body, /낮아진 자리는 남아/);
+  const missing = createGuide(fixture(entity('rising', 10, 12, null)), 'rising');
+  assert.match(missing.chapters[1].body, /통계는 제공되지 않습니다/);
+  assert.doesNotMatch(serialized(missing), /NaN|undefined|Infinity/);
 });
 
-test('falling regional mean can have a genuine rising-district counterexample', () => {
-  const guide = createGuide(fixture(entity('falling', 10, 8, 70), [entity('growing', 5, 6, 30)]), 'falling');
-  assert.equal(guide.counterexample, true);
-  assert.match(guide.chapters[0].title, /낮아졌습니다/);
-  assert.match(guide.chapters[2].body, /-20\.0%.*\+20\.0%/);
+test('future overview directions follow the observations, including falls and mixed directions', () => {
+  const falling = createGuide(fixture(entity('one', 10, 8), entity('two', 5, 4), entity('three', 20, 10)));
+  assert.match(falling.chapters[0].title, /모두 낮아졌습니다/);
+  assert.doesNotMatch(serialized(falling), /모두 높아졌습니다/);
+  const mixed = createGuide(fixture(entity('one', 10, 8), entity('two', 5, 6), entity('three', 20, 20)));
+  assert.match(mixed.chapters[0].title, /서로 다른 방향/);
 });
 
-test('coverage excludes a dramatic but weakly observed district', () => {
-  const guide = createGuide(fixture(entity('overall', 10, 12), [entity('low-coverage', 10, 1, 90, 70), entity('covered', 10, 9, 60, 95)]), 'overall');
-  assert.equal(guide.district, 'covered');
-  assert.equal(guide.counterexample, true);
+test('a gapped or nonmonotonic annual series is not narrated as a yearly rise', () => {
+  const manifest = fixture(entity('one', 10, 12));
+  manifest.years = [2020, 2021, 2022];
+  manifest.regions[0].series.push({year: 2022, mean: 11, decreased_area_pct: 30});
+  assert.doesNotMatch(serialized(createGuide(manifest)), /매년/);
+  manifest.regions[0].series[1].mean = null;
+  assert.doesNotMatch(serialized(createGuide(manifest)), /매년/);
 });
 
-test('missing or ineligible district data does not invent a place or percentage', () => {
-  const guide = createGuide(fixture(entity('overall', 10, 12), [entity('missing', 5, null), entity('excluded', 10, 8, 80, 30)]), 'overall');
-  assert.equal(guide.district, null);
-  assert.equal(guide.counterexample, false);
-  assert.match(guide.chapters[2].body, /고르지 못했습니다/);
-  assert.doesNotMatch(serialized(guide), /NaN|undefined|Infinity/);
-});
-
-test('missing area statistics stay missing, not zero', () => {
-  const guide = createGuide(fixture(entity('overall', 10, 12, null), [entity('place', 5, 6, null)]), 'overall');
-  assert.match(guide.chapters[1].body, /통계는 제공되지 않습니다/);
-  assert.match(guide.chapters[2].body, /통계는 없어/);
-});
-
-test('unobserved baseline or incomplete regional means are rejected', () => {
-  const missingBaseline = fixture(entity('overall', 10, 12), []);
+test('unobserved baseline and incomplete observations fail without fabricated prose', () => {
+  const missingBaseline = fixture(entity('overall', 10, 12));
   missingBaseline.baseline_year = 2019;
   assert.throws(() => createGuide(missingBaseline, 'overall'), /baseline/);
-  assert.throws(() => createGuide(fixture(entity('overall', 10, null), []), 'overall'), /incomplete observations/);
+  assert.throws(() => createGuide(fixture(entity('overall', 10, null)), 'overall'), /incomplete observations/);
 });

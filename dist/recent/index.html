@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080b10">
-  <meta name="description" content="서울·부산·제주의 공개 야간광으로 읽는 데이터 아트. 평균이 밝아져도 모든 자리가 함께 밝아지는 것은 아니다.">
+  <meta name="description" content="서울·부산·제주의 공개 야간광으로 읽는 데이터 아트. 밤을 한 방향으로 말하기 전에, 빛이 달라진 자리를 돌아봅니다.">
   <title>밤의 지문 — 평균이 지운 자리</title>
   <link rel="stylesheet" href="./style.css">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
@@ -24,10 +24,10 @@
   <main>
     <section class="opening" aria-labelledby="question-title">
       <p class="eyebrow">SEOUL · BUSAN · JEJU <span id="edition">관측 자료</span></p>
-      <h1 id="question-title">평균이 밝아지면,<br>모든 자리도 밝아질까.</h1>
-      <p id="opening-copy" class="opening-copy">한 숫자로 접힌 밤을 다시 펼칩니다.<br class="mobile-break"> 세 지역의 빛, 그리고 그 안에 남은 다른 방향.</p>
+      <h1 id="question-title">밤이 달라졌다면,<br>어디가 달라졌을까.</h1>
+      <p id="opening-copy" class="opening-copy">서울·부산·제주의 밤을 한 방향으로 말하기 전에,<br class="mobile-break"> 빛이 달라진 자리를 돌아봅니다.</p>
       <div class="story-actions">
-        <button id="start-guide" class="primary-action" type="button" disabled>안내 감상 시작 <span>네 장면으로 읽는 밤</span></button>
+        <button id="start-guide" class="primary-action" type="button" disabled>세 지역 이야기 <span>네 장면으로 읽는 밤</span></button>
         <button id="reveal-change" class="secondary-action" type="button">변화 살펴보기 <span>기준 관측과 비교</span></button>
         <p id="story-hint">금빛 표면에서 시작해, 같은 자리의 변화를 살펴보세요.</p>
       </div>
@@ -36,8 +36,8 @@
     <section id="artwork" class="artwork" aria-labelledby="art-title" aria-busy="true">
       <div class="art-toolbar">
         <div class="region-tabs" role="group" aria-label="감상할 지역">
-          <button type="button" data-region="all" aria-pressed="false">세 지역</button>
-          <button type="button" class="active" data-region="seoul" aria-pressed="true">서울</button>
+          <button type="button" class="active" data-region="all" aria-pressed="true">세 지역</button>
+          <button type="button" data-region="seoul" aria-pressed="false">서울</button>
           <button type="button" data-region="busan" aria-pressed="false">부산</button>
           <button type="button" data-region="jeju" aria-pressed="false">제주</button>
         </div>
@@ -56,7 +56,7 @@
       </div>
       <p id="regional-tools-note" class="regional-tools-note" hidden>서울·부산·제주 중 한 지역을 고르면 두 시점 비교와 관측 범위를 볼 수 있습니다.</p>
       <section id="guided-story" class="guided-story" aria-labelledby="guide-step-title" hidden>
-        <div class="guide-progress" aria-label="감상 순서"><span>평균</span><span>차이</span><span>장소</span><span>다시 보기</span></div>
+        <div class="guide-progress" aria-label="감상 순서"><span>한 방향</span><span>다른 자리</span><span>밤의 지문</span><span>내가 볼 자리</span></div>
         <div class="guide-story-content"><div><p id="guide-step-count" class="panel-eyebrow">01 / 04</p><h2 id="guide-step-title" tabindex="-1"></h2><p id="guide-step-body"></p></div><div class="guide-navigation"><button id="guide-prev" type="button">이전</button><button id="guide-next" type="button">다음 장면</button><button id="guide-exit" type="button">자유롭게 감상</button></div></div>
       </section>
       <div class="scene-heading">
@@ -127,8 +127,8 @@
     </section>
 
     <section class="afterword" aria-labelledby="afterword-title">
-      <div><p class="eyebrow">평균이 지운 자리</p><h2 id="afterword-title">평균의 방향과,<br>그 안의 자리.</h2></div>
-      <div class="afterword-body"><p id="afterword-main">평균의 증가는 모든 장소의 같은 변화를 뜻하지 않습니다. 이 작품은 빛이 놓인 위치를 표면으로 펼쳐, 한 숫자만으로는 보이지 않는 방향을 함께 남깁니다.</p><p id="afterword-update">새로운 관측을 확보하면, 같은 경계와 기준으로 다시 계산합니다. 작품은 관측이 늘어나는 만큼 이 질문을 이어 갑니다.</p><button type="button" data-dialog="source-dialog" class="text-action">다음 관측을 기다리는 방식</button></div>
+      <div><p class="eyebrow">평균이 지운 자리</p><h2 id="afterword-title">밤이 달라졌다는<br>말 다음에.</h2></div>
+      <div class="afterword-body"><p id="afterword-main">어느 자리가 어떻게 변했는지 묻습니다. 평균은 변화를 요약하지만, 장소마다 달라진 빛의 위치를 대신 보여 주지는 못합니다. 이 작품의 ‘지문’은 그 배치와 변화가 남긴 모양입니다. 하나의 방향이나 순위로 읽기 전에, 내가 지나친 자리를 다시 보는 것이 이 감상의 끝입니다.</p><p id="afterword-update">새로운 관측을 확보하면, 같은 경계와 기준으로 다시 계산합니다. 작품은 관측이 늘어나는 만큼 이 질문을 이어 갑니다.</p><button type="button" data-dialog="source-dialog" class="text-action">다음 관측을 기다리는 방식</button></div>
     </section>
     <section class="observation-history" aria-labelledby="history-title">
       <details class="history-disclosure">

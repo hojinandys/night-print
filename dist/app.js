@@ -1,12 +1,12 @@
 'use strict';
-import { createGuide } from './story.mjs';
+import { createGuide, guideScene } from './story.mjs?v=ecd099722438';
 import { createImmersiveFocus } from './immersive-focus.mjs';
 import { createObservationCache } from './observation-cache.mjs';
 import { createPlayback } from './playback.mjs';
 (() => {
   const $ = (id) => document.getElementById(id);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const state = { data: null, region: 'seoul', mode: 'absolute', yearIndex: 0, district: null, zoom: false, renderToken: 0, guide: null, guideTarget: null, compare: false, compareA: null, compareB: null, quality: false, threshold: '0.5', infoHidden: false, immersive: false, archiveId: null, history: null, historyLoading: false, interaction: null };
+  const state = { data: null, region: 'all', mode: 'absolute', yearIndex: 0, district: null, zoom: false, renderToken: 0, guide: null, guideTarget: null, compare: false, compareA: null, compareB: null, quality: false, threshold: '0.5', infoHidden: false, immersive: false, archiveId: null, history: null, historyLoading: false, interaction: null };
   const interactionCache = createObservationCache();
   const immersiveFocus = createImmersiveFocus($('artwork'), $('cinema-toggle'));
   let loadingKey = '', loadingPromise = null, mapToken = 0, historyToken = 0, yearRequest = 0;
@@ -263,7 +263,7 @@ import { createPlayback } from './playback.mjs';
     $('compare-action').textContent = state.compare ? '비교 끄기' : '비교 켜기';
     $('compare-toggle').setAttribute('aria-label', state.compare ? '두 시점 비교 끄기, 한 작품으로 보기' : '두 시점 비교 켜기');
     $('compare-toggle').title = state.compare ? `${periodLabel(state.compareB)}의 한 작품으로 돌아갑니다` : '현재 보는 관측과 다른 시점을 나란히 봅니다';
-    $('regional-guide').textContent = state.region === 'all' ? '안내 감상' : `${label(region())}의 이야기`;
+    $('regional-guide').textContent = state.region === 'all' ? '세 지역 이야기' : `${label(region())}의 이야기`;
     $('regional-guide').setAttribute('aria-expanded', String(state.guide !== null));
     const regionalToolsUnavailable = state.region === 'all';
     ['compare-toggle', 'quality-toggle'].forEach((id) => {
@@ -319,7 +319,7 @@ import { createPlayback } from './playback.mjs';
   function renderDetail() {
     if (state.region === 'all') return;
     const r = region(), selected = r.districts.find((d) => String(d.id) === String(state.district)), entity = selected || r, values = series(entity), compared = pairValues(entity), record = pairRecord(entity), [a, b] = pair();
-    if ($('linked-map').dataset.key !== `${editionAsset(r.interaction_url || '')}/${r.id}`) { $('linked-map').replaceChildren(); $('region-map').hidden = true; }
+    if ($('linked-map').dataset.key !== `${editionAsset(r.interaction_url || '')}/${r.id}`) { $('linked-map').replaceChildren(); $('linked-map').dataset.key = ''; $('region-map').hidden = true; }
     $('detail-label').textContent = `${label(r)} · ${state.compare ? '두 시점의 밝기' : state.mode === 'change' ? '변화의 표면' : '밝기의 표면'}`;
     const img = $('single-image'), path = imagePath(r); if (img.getAttribute('src') !== path) { $('single-image-error').hidden = true; img.src = path; }
     img.alt = `${label(r)} ${periodName(year())} ${state.mode === 'change' ? `${periodName(baseline())} 대비 변화` : observation()} 입체 작품`;
@@ -387,7 +387,7 @@ import { createPlayback } from './playback.mjs';
       if (r.map_url) $('region-map').src = editionAsset(r.map_url);
       $('map-status').textContent = '연동 지도를 불러오지 못했습니다. 다시 시도하거나 위 목록에서 구역을 고를 수 있습니다.'; return;
     }
-    if (target.dataset.key !== key) {
+    if (target.dataset.key !== key || !target.firstElementChild) {
       const [minX,minY,maxX,maxY] = data.bounds, pad = Math.max(maxX-minX,maxY-minY) * .045;
       const svg = svgNode('svg', {viewBox:`${minX-pad} ${-maxY-pad} ${maxX-minX+2*pad} ${maxY-minY+2*pad}`, role:'group', 'aria-label':`${label(r)}의 북쪽이 위인 구역 지도`});
       const defs = svgNode('defs'), pattern = svgNode('pattern', {id:'map-missing-pattern', patternUnits:'userSpaceOnUse',width:.04,height:.04,patternTransform:'rotate(35)'});
@@ -436,15 +436,13 @@ import { createPlayback } from './playback.mjs';
     stopPlay();
     if (!state.guideTarget) state.guideTarget = findGuideTarget();
     const previousRegion = state.region;
-    state.guide = Math.max(0, Math.min(3, step)); state.region = state.guideTarget.region; state.yearIndex = state.data.years.length - 1;
-    state.compare = step === 3; state.compareA = state.data.years[0]; state.compareB = state.data.years.at(-1); state.mode = step === 1 || step === 2 ? 'change' : 'absolute';
-    state.district = step >= 2 ? state.guideTarget.district : null; state.zoom = !!state.district;
+    Object.assign(state, guideScene(state.guideTarget, step, state.data.years));
+    state.compareA = state.data.years[0]; state.compareB = state.data.years.at(-1);
     if (previousRegion !== state.region) state.interaction = null;
     state.infoHidden = false; syncInfo();
     if (step === 0) { state.quality = false; if (viewerReady) viewer.reset(); }
-    pendingFocus = step === 2 ? state.district : null;
+    pendingFocus = null;
     render();
-    if (viewerReady && step === 2 && state.district) viewer.focus(state.district);
     $('guided-story').scrollIntoView({behavior:reducedMotion.matches ? 'instant' : 'smooth', block:'start'});
     $('guide-step-title').focus({preventScroll:true});
     announce(`안내 감상 ${step+1} / 4. ${$('guide-step-title').textContent}`);
@@ -455,10 +453,16 @@ import { createPlayback } from './playback.mjs';
     if (state.guide === null || !state.guideTarget) return;
     const r = state.data.regions.find((item) => item.id === state.guideTarget.region);
     const chapter = state.guideTarget.chapters[state.guide];
-    $('guide-step-count').textContent = `0${state.guide+1} / 04 · ${label(r)}`;
+    $('guide-step-count').textContent = `0${state.guide+1} / 04 · ${r ? label(r) : '세 지역'}`;
     $('guide-step-title').textContent = chapter.title; $('guide-step-body').textContent = chapter.body;
-    $('guide-prev').disabled = state.guide === 0; $('guide-next').textContent = state.guide === 3 ? '단일 감상으로 이어 보기' : '다음 장면';
+    $('guide-prev').disabled = state.guide === 0; $('guide-next').textContent = state.guide === 3 ? '내가 볼 자리 고르기' : '다음 장면';
     document.querySelectorAll('.guide-progress span').forEach((node,index) => { node.classList.toggle('active',index === state.guide); node.classList.toggle('complete',index < state.guide); if(index === state.guide) node.setAttribute('aria-current','step'); else node.removeAttribute('aria-current'); });
+  }
+  function finishGuide() {
+    leaveGuide();
+    const target = document.querySelector(`[data-region="${state.region}"]`);
+    target?.focus({preventScroll:true});
+    announce(state.region === 'all' ? '자유 감상으로 이어집니다. 보고 싶은 지역을 골라 입체와 지도를 살펴보세요.' : '자유 감상으로 이어집니다. 같은 작품을 돌려 보거나 지도를 선택할 수 있습니다. 비교는 원할 때 켜세요.');
   }
   function toggleComparison() {
     if (!state.data || state.region === 'all') return;
@@ -565,20 +569,20 @@ import { createPlayback } from './playback.mjs';
     const data = state.data, source = data.source || {}, isMonthly = monthly();
     document.body.classList.toggle('monthly-edition', isMonthly);
     document.title = `밤의 지문 — ${isMonthly ? '최근 같은 달의 관측' : '평균이 지운 자리'}`;
-    document.querySelector('meta[name="description"]').content = isMonthly ? '서울·부산·제주의 같은 달 야간광을 비교하는 데이터 아트. 평균의 방향과 그 안의 자리를 함께 읽습니다.' : '서울·부산·제주의 공개 연간 야간광으로 읽는 데이터 아트. 평균이 밝아져도 모든 자리가 함께 밝아지는 것은 아닙니다.';
-    $('opening-copy').textContent = isMonthly ? `${periodName(data.years[0])}과 ${periodName(data.years.at(-1))}, 같은 달의 밤을 겹칩니다. 평균의 방향과 그 안의 자리를 함께 봅니다.` : '한 숫자로 접힌 밤을 다시 펼칩니다. 세 지역의 빛, 그리고 그 안에 남은 다른 방향.';
+    document.querySelector('meta[name="description"]').content = `서울·부산·제주의 ${isMonthly ? '같은 달' : '연간'} 야간광으로 읽는 데이터 아트. 밤을 한 방향으로 말하기 전에, 빛이 달라진 자리를 돌아봅니다.`;
+    $('opening-copy').textContent = isMonthly ? `${periodName(data.years[0])}과 ${periodName(data.years.at(-1))}, 같은 달의 실제 관측입니다. 세 지역의 밤을 한 방향으로 말하기 전에, 빛이 달라진 자리를 돌아봅니다.` : '서울·부산·제주의 밤을 한 방향으로 말하기 전에, 빛이 달라진 자리를 돌아봅니다.';
     $('comparison').setAttribute('aria-label', `세 지역 같은 ${isMonthly ? '월간 관측' : '연도'} 비교`);
     $('timeline-label').textContent = isMonthly ? '같은 달의 관측 시점' : '관측 연도';
     $('year-ticks').setAttribute('aria-label', isMonthly ? '같은 달 관측 바로 선택' : '연도 바로 선택');
     document.querySelector('.place-main-value .unit').textContent = units();
-    $('afterword-title').innerHTML = isMonthly ? '평균의 방향과,<br>그 안의 자리.' : '밝아진 밤 안에도,<br>낮아진 자리는 남아 있습니다.';
-    $('afterword-main').textContent = isMonthly ? '평균이 움직인 방향과 모든 장소의 방향은 같지 않을 수 있습니다. 이 작품은 두 관측을 같은 자리에서 빼고, 한 숫자만으로는 보이지 않는 차이를 표면으로 펼칩니다.' : '평균의 증가는 모든 장소의 같은 변화를 뜻하지 않습니다. 이 작품은 빛이 놓인 위치를 표면으로 펼쳐, 한 숫자만으로는 보이지 않는 방향을 함께 남깁니다.';
+    $('afterword-title').innerHTML = '밤이 달라졌다는<br>말 다음에.';
+    $('afterword-main').textContent = '어느 자리가 어떻게 변했는지 묻습니다. 평균은 변화를 요약하지만, 장소마다 달라진 빛의 위치를 대신 보여 주지는 못합니다. 이 작품의 ‘지문’은 그 배치와 변화가 남긴 모양입니다. 하나의 방향이나 순위로 읽기 전에, 내가 지나친 자리를 다시 보는 것이 이 감상의 끝입니다.';
     $('afterword-update').textContent = isMonthly ? '같은 달을 비교해 계절 차이를 줄이지만, 날씨와 관측 품질의 영향까지 사라지지는 않습니다. 새 비교 자료가 확보되면 같은 경계와 검증 기준으로 다시 질문합니다.' : '새로운 연간 관측이 공개되면, 같은 경계와 기준으로 다시 계산합니다. 작품은 관측이 늘어나는 만큼 이 질문을 이어 갑니다.';
     $('guide-height').textContent = `밝기 장면은 ${observation()}, 변화 장면은 같은 위치의 ${periodName(baseline())} 값을 뺀 차이입니다. 큰 값과 작은 값을 함께 보기 위해 비선형 높이를 사용합니다.`;
     $('guide-color').textContent = '변화 장면의 금빛은 증가, 푸른빛은 감소입니다. 등고선은 같은 표시 높이를 잇습니다. 선 한 줄이 하나의 관측 시점을 뜻하지 않습니다. 밝기 장면의 색과 그림자는 고정 조명입니다.';
     $('guide-time').textContent = isMonthly ? `각 연도의 ${data.period.month}월 실제 관측을 고릅니다. 재생은 공개된 관측의 순서이며 새 자료의 실시간 도착이 아닙니다. 그래프의 선은 두 시점을 연결할 뿐, 사이의 관측이나 연속 추세를 뜻하지 않습니다.` : '연도별 실제 관측을 고릅니다. 연도 재생은 공개된 과거 관측의 순서이며, 새로운 자료가 도착했다는 알림이나 실시간 측정이 아닙니다.';
     $('source-title').innerHTML = isMonthly ? '새로운 관측에도,<br>같은 자리에서 다시 묻습니다.' : '새로운 해에도,<br>같은 자리에서 다시 묻습니다.';
-    $('source-lead').textContent = isMonthly ? '같은 달의 밤을 같은 좌표에서 비교합니다. 장기 변화와 최근 관측은 서로 다른 자료를 사용하는 별도의 판입니다. 두 판의 수치를 직접 이어 붙이지 않습니다.' : '야간광은 빛이면서 관측된 수치입니다. 같은 좌표를 여러 해에 걸쳐 읽을 수 있어, 평균과 그 안의 장소를 하나의 질문으로 연결합니다.';
+    $('source-lead').textContent = isMonthly ? '같은 달의 밤을 같은 좌표에서 비교합니다. 장기 변화와 최근 관측은 서로 다른 자료를 사용하는 별도의 판입니다. 두 판의 수치를 직접 이어 붙이지 않습니다.' : '한 장의 야경으로는 여러 해 동안 어디서 빛이 달라졌는지 알기 어렵습니다. 야간광은 익숙한 밤을 같은 좌표의 관측으로 다시 볼 수 있게 합니다. 빛의 양뿐 아니라 그 빛이 놓인 자리를 함께 살펴보려는 이유입니다.';
     $('update-discovery').textContent = isMonthly ? '공식 제공처에서 같은 달 비교에 필요한 자료와 관측 품질 정보를 확인합니다.' : '공식 제공처의 연도 목록을 확인합니다.';
     const monthlyMethod = `${source.title || source.label || '공식 월간 야간광'} 자료를 사용합니다.${source.processing_note ? ` ${source.processing_note}` : ''} 같은 판의 두 시점에서 공통으로 관측 가능한 위치를 사용하고, 경계와 겹치는 면적으로 가중합니다. 같은 달 비교에도 기상과 관측 품질의 영향이 남으며, 두 시점만으로 장기 추세를 판단할 수 없습니다.`;
     const annualMethod = 'WorldPop이 제공한 EOG 연평균 야간광을 500m 격자로 집계했습니다. 같은 판에 포함된 모든 연도에 공통으로 관측 가능한 위치를 사용하고, 경계와 겹치는 면적으로 가중합니다. 새 연도가 추가되면 공통 관측 영역이 달라질 수 있어 이전 연도의 수치도 같은 영역에서 다시 계산합니다.';
@@ -614,6 +618,11 @@ import { createPlayback } from './playback.mjs';
     const replay = status === 'historical_replay' || data.update?.historical_replay;
     $('release-status').textContent = replay ? `${periodName(last)}까지의 과거 관측으로 갱신 과정 재현` : noNew ? `${periodName(last)}까지 반영 · 새 ${monthly() ? '비교' : '연도'} 자료 없음` : `${periodName(last)}까지 검증된 관측 반영`;
     if (data.update?.message && !replay) $('release-status').textContent = data.update.message;
+    if (status === 'needs_credentials' && !replay) {
+      const pendingPeriod = data.update?.latest_available_period;
+      const pending = typeof pendingPeriod === 'string' ? ` 공식 목록의 최신 자료: ${pendingPeriod}.` : '';
+      $('release-status').textContent = `${periodName(last)}까지의 작품을 유지 중. ${data.update?.explanation || '새 자료의 자동 다운로드 인증을 갱신해야 합니다.'}${pending}`;
+    }
     const repo = data.repository_url || data.source?.repository_url || data.update?.repository_url;
     $('repository-link').hidden = !(repo && /^https:\/\/github\.com\//.test(repo));
     if (!$('repository-link').hidden) $('repository-link').querySelector('a').href = repo;
@@ -623,6 +632,11 @@ import { createPlayback } from './playback.mjs';
   }
   function initialize(data, refreshing = false) {
     if (!Array.isArray(data.years) || !data.years.length || !Array.isArray(data.regions) || data.regions.length !== 3) throw new Error('Invalid artwork manifest');
+    if (!state.data) {
+      const hash = window.location.hash.slice(1);
+      const linkedRegion = new URLSearchParams(window.location.search).get('region') || new URLSearchParams(hash).get('region') || hash;
+      if (data.regions.some((item) => item.id === linkedRegion)) state.region = linkedRegion;
+    }
     const oldYear = state.data ? year() : null, wasLatest = !state.data || state.yearIndex === state.data.years.length - 1;
     state.data = data; state.yearIndex = wasLatest ? data.years.length - 1 : Math.max(0, data.years.indexOf(oldYear));
     state.interaction = null; viewerKey = ''; loadingKey = ''; ++state.renderToken; ++mapToken;
@@ -655,11 +669,11 @@ import { createPlayback } from './playback.mjs';
     } catch { /* A failed refresh leaves the last complete artwork in place. */ }
   }
   $('start-guide').setAttribute('aria-controls','guided-story');
-  $('start-guide').addEventListener('click', () => { state.guideTarget = null; setGuide(0); });
+  $('start-guide').addEventListener('click', () => { if (!state.data) return; state.guideTarget = createGuide(state.data, 'all'); setGuide(0); });
   $('regional-guide').addEventListener('click', () => { state.guideTarget = null; setGuide(0); });
   $('guide-prev').addEventListener('click', () => setGuide(state.guide-1));
-  $('guide-next').addEventListener('click', () => { if (state.guide === 3) { toggleComparison(); $('compare-toggle').focus({preventScroll:true}); announce('안내가 끝났습니다. 한 작품으로 돌아왔습니다. 비교는 언제든 다시 켤 수 있습니다.'); } else setGuide(state.guide+1); });
-  $('guide-exit').addEventListener('click', () => { if (state.compare) toggleComparison(); else leaveGuide(); $('compare-toggle').focus({preventScroll:true}); announce('자유 감상으로 전환했습니다. 비교는 필요할 때 켤 수 있습니다.'); });
+  $('guide-next').addEventListener('click', () => { if (state.guide === 3) finishGuide(); else setGuide(state.guide+1); });
+  $('guide-exit').addEventListener('click', finishGuide);
   $('compare-toggle').addEventListener('click',toggleComparison);
   ['compare-a','compare-b'].forEach((id) => $(id).addEventListener('change', (event) => { leaveGuide(); stopPlay(); state[id === 'compare-a' ? 'compareA' : 'compareB'] = Number(event.target.value); state.yearIndex = yearIndex(state.compareB); render(); }));
   $('quality-toggle').addEventListener('click', () => {
