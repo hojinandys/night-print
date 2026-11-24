@@ -15,7 +15,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   const imageCache = new Map();
   const viewerModule = () => viewerModulePromise ||= import('./viewer3d.js?v=f3c8217b066a');
   let viewerPromise = null, viewer = null, viewerKey = '', viewerReady = false, pendingFocus = null;
-  let pendingPlaceFocus = null;
+  let pendingPlaceFocus = null, pendingComparison = null;
   const finite = (v) => typeof v === 'number' && Number.isFinite(v);
   const fmt = (v, digits = 1, signed = false) => finite(v) ? `${signed && v > 0 ? '+' : ''}${v.toFixed(digits)}` : '—';
   const pct = (v, signed = false) => `${fmt(v, 1, signed)}${finite(v) ? '%' : ''}`;
@@ -275,8 +275,64 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   }
   function stopPlay() {
     ++yearRequest;
+    cancelPendingComparison();
     playback.stop();
     syncPlayback(false);
+  }
+  function syncComparisonControls(message = '같은 위치 · 같은 높이 규칙 · 함께 움직이는 시점') {
+    if (state.data) {
+      $('compare-a').value = String(state.compareA);
+      $('compare-b').value = String(state.compareB);
+    }
+    $('pair-controls').setAttribute('aria-busy', String(!!pendingComparison));
+    const note = $('pair-controls').querySelector('p');
+    note.setAttribute('role', 'status'); note.textContent = message;
+  }
+  function cancelPendingComparison() {
+    pendingComparison = null;
+    syncComparisonControls();
+  }
+  async function prepareComparison(r, a, b) {
+    if (r.webgl && !webglUnavailable && !rendererUnavailable) {
+      const module = await viewerModule();
+      await Promise.all([module.preloadFrame(r, a, 'absolute'), module.preloadFrame(r, b, 'absolute')]);
+    } else {
+      await Promise.all([prepareImage(imagePath(r, a, 'absolute')), prepareImage(imagePath(r, b, 'absolute'))]);
+    }
+  }
+  async function setComparison(axis, value) {
+    const selected = Number(value);
+    if (!state.data || !state.compare || state.region === 'all' ||
+        !['a', 'b'].includes(axis) || !state.data.years.includes(selected)) return false;
+    // Successive A/B choices extend the pending request, while controls and
+    // observations continue to describe the complete pair already on screen.
+    const previous = pendingComparison;
+    const requested = { a: previous?.a ?? state.compareA, b: previous?.b ?? state.compareB,
+      data: state.data, region: state.region };
+    requested[axis] = selected;
+    stopPlay();
+    if (requested.a === state.compareA && requested.b === state.compareB) return true;
+    pendingComparison = requested;
+    syncComparisonControls(`${periodName(requested.a)} · ${periodName(requested.b)} 준비 중 · 현재 두 관측을 유지합니다`);
+    const current = () => pendingComparison === requested && state.data === requested.data &&
+      state.region === requested.region && state.compare;
+    try {
+      await prepareComparison(region(), requested.a, requested.b);
+      if (!current()) return false;
+      pendingComparison = null;
+      leaveGuide(); clearPlaceStory();
+      state.compareA = requested.a; state.compareB = requested.b;
+      state.yearIndex = yearIndex(requested.b);
+      syncComparisonControls();
+      await render();
+      return true;
+    } catch (error) {
+      if (!current()) return false;
+      pendingComparison = null;
+      const message = '두 관측을 불러오지 못해 이전 비교를 유지했습니다. 연도를 다시 선택해 주세요.';
+      syncComparisonControls(message); announce(message);
+      return false;
+    }
   }
   function playYears() {
     if (!state.data || state.compare) return;
@@ -337,6 +393,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   }
   function selectDistrict(id) {
     if (!state.data || state.region === 'all') return;
+    cancelPendingComparison();
     leaveGuide(); clearPlaceStory(); state.district = id || null; state.zoom = !!id; renderDetail();
     if (viewerReady) { viewer.select(id); if (id) viewer.focus(id); }
     else pendingFocus = id || null;
@@ -802,6 +859,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   }
   function initialize(data, refreshing = false) {
     if (!Array.isArray(data.years) || !data.years.length || !Array.isArray(data.regions) || data.regions.length !== 3) throw new Error('Invalid artwork manifest');
+    cancelPendingComparison();
     clearPlaceStory();
     if (!state.data) {
       const hash = window.location.hash.slice(1);
@@ -846,7 +904,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   $('guide-next').addEventListener('click', () => { if (state.guide === 3) finishGuide(); else setGuide(state.guide+1); });
   $('guide-exit').addEventListener('click', finishGuide);
   $('compare-toggle').addEventListener('click',toggleComparison);
-  ['compare-a','compare-b'].forEach((id) => $(id).addEventListener('change', (event) => { leaveGuide(); clearPlaceStory(); stopPlay(); state[id === 'compare-a' ? 'compareA' : 'compareB'] = Number(event.target.value); state.yearIndex = yearIndex(state.compareB); render(); }));
+  ['compare-a','compare-b'].forEach((id) => $(id).addEventListener('change', (event) => setComparison(id === 'compare-a' ? 'a' : 'b', event.target.value)));
   $('quality-toggle').addEventListener('click', () => {
     if (!state.data || state.region === 'all') return;
     state.quality = !state.quality;
