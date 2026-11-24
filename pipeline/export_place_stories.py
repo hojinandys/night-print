@@ -109,7 +109,7 @@ def build(project, dist, definitions=ROOT / 'pipeline/place_story_definitions.js
     evidence.mkdir(exist_ok=True)
     (evidence / 'place-stories.json').write_text(text + '\n')
     with (evidence / 'place-observations.csv').open('w', newline='') as stream:
-        writer = csv.writer(stream)
+        writer = csv.writer(stream, lineterminator='\n')
         writer.writerow(['case_id', 'region', 'year', 'mean_nW_cm2_sr', 'observed_area_km2', 'square_coverage_pct'])
         for case in cases:
             o = case['observation']
