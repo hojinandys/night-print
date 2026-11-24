@@ -54,6 +54,7 @@
         <button id="info-toggle" type="button" aria-expanded="true" aria-controls="place-panel">정보 접기</button>
         <button id="cinema-toggle" type="button" aria-pressed="false">화면 채우기</button>
       </div>
+      <p id="regional-tools-note" class="regional-tools-note" hidden>서울·부산·제주 중 한 지역을 고르면 두 시점 비교와 관측 범위를 볼 수 있습니다.</p>
       <section id="guided-story" class="guided-story" aria-labelledby="guide-step-title" hidden>
         <div class="guide-progress" aria-label="감상 순서"><span>평균</span><span>차이</span><span>장소</span><span>다시 보기</span></div>
         <div class="guide-story-content"><div><p id="guide-step-count" class="panel-eyebrow">01 / 04</p><h2 id="guide-step-title" tabindex="-1"></h2><p id="guide-step-body"></p></div><div class="guide-navigation"><button id="guide-prev" type="button">이전</button><button id="guide-next" type="button">다음 장면</button><button id="guide-exit" type="button">자유롭게 감상</button></div></div>
@@ -125,13 +126,18 @@
       <p id="update-notice" class="update-notice" role="status" hidden></p>
     </section>
 
-    <section class="observation-history" aria-labelledby="history-title">
-      <div><p class="eyebrow">이어지는 질문</p><h2 id="history-title">관측 기록</h2><p>자료가 바뀌면 표면도 다시 만듭니다.<br>이전 판의 값과 관측 범위는 그때의 상태로 남깁니다.</p></div>
-      <div class="history-content"><label for="history-select">기록된 관측 판</label><div class="history-selection"><select id="history-select" disabled><option>기록을 확인하는 중</option></select><button id="history-latest" type="button" hidden>최신 판으로</button></div><p id="history-status" role="status"></p><p id="history-period"></p><p id="history-summary"></p><ul id="history-changes"></ul><p class="history-note">관측 기간과 기록 시각은 다릅니다. 화면 디자인의 수정은 새 관측으로 세지 않습니다.</p></div>
-    </section>
     <section class="afterword" aria-labelledby="afterword-title">
       <div><p class="eyebrow">평균이 지운 자리</p><h2 id="afterword-title">평균의 방향과,<br>그 안의 자리.</h2></div>
       <div class="afterword-body"><p id="afterword-main">평균의 증가는 모든 장소의 같은 변화를 뜻하지 않습니다. 이 작품은 빛이 놓인 위치를 표면으로 펼쳐, 한 숫자만으로는 보이지 않는 방향을 함께 남깁니다.</p><p id="afterword-update">새로운 관측을 확보하면, 같은 경계와 기준으로 다시 계산합니다. 작품은 관측이 늘어나는 만큼 이 질문을 이어 갑니다.</p><button type="button" data-dialog="source-dialog" class="text-action">다음 관측을 기다리는 방식</button></div>
+    </section>
+    <section class="observation-history" aria-labelledby="history-title">
+      <details class="history-disclosure">
+        <summary><span id="history-title">관측 기록</span><span class="history-summary-note">보존된 관측과 갱신 이력</span></summary>
+        <div class="history-layout">
+          <p class="history-intro">자료가 바뀌면 표면도 다시 만듭니다.<br>이전 판의 값과 관측 범위는 그때의 상태로 남깁니다.</p>
+          <div class="history-content"><label for="history-select">기록된 관측 판</label><div class="history-selection"><select id="history-select" disabled><option>기록을 확인하는 중</option></select><button id="history-latest" type="button" hidden>최신 판으로</button></div><p id="history-status" role="status"></p><p id="history-period"></p><p id="history-summary"></p><ul id="history-changes" hidden></ul><p class="history-note">관측 기간과 기록 시각은 다릅니다. 화면 디자인의 수정은 새 관측으로 세지 않습니다.</p></div>
+        </div>
+      </details>
     </section>
   </main>
 

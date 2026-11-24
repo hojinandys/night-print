@@ -66,3 +66,17 @@
 .artwork.immersive .single-viewport,.artwork.immersive.pair-mode .single-viewport,.artwork.immersive.pair-mode .single-viewport[data-comparison-axis="vertical"]{height:var(--immersive-canvas-height,calc(100dvh - 380px));min-height:210px;max-height:none;aspect-ratio:auto}
 .artwork.immersive .art-toolbar{padding-top:4px;padding-bottom:5px}.artwork.immersive .experience-tools{padding-top:2px}.artwork.immersive .scene-heading{padding:13px 0 16px}.artwork.immersive .pair-controls{padding:8px 0 12px;margin-bottom:8px}.artwork.immersive .detail-topline{min-height:36px}.artwork.immersive .orbit-instruction{padding-top:8px;min-height:30px}.artwork.immersive .detail-bottomline{padding-top:9px;padding-bottom:9px}
 @media(max-width:700px){.artwork.immersive{padding-top:5px}.artwork.immersive .scene-heading{padding:10px 0 13px;gap:7px}.artwork.immersive .scene-heading #scene-description{display:none}.artwork.immersive .pair-controls{gap:6px 12px;padding:5px 0 8px;margin-bottom:6px}.artwork.immersive .pair-controls p{display:none}.artwork.immersive .experience-tools button{min-height:36px;padding-top:5px;padding-bottom:5px}.artwork.immersive .single-viewport,.artwork.immersive.pair-mode .single-viewport[data-comparison-axis="vertical"]{height:var(--immersive-canvas-height,calc(100dvh - 285px))}.artwork.immersive .detail-bottomline{padding-top:5px}.artwork.immersive .detail-topline{min-height:32px}.artwork.immersive .orbit-instruction{font-size:11px;line-height:1.65}}
+
+/* Keep the conclusion next to the artwork; archive detail stays available on demand. */
+.regional-tools-note{color:var(--quiet);font-size:13px;line-height:1.8;margin-top:8px}
+.observation-history{display:block;padding-top:24px}
+.history-disclosure{border-top:1px solid var(--line)}
+.history-disclosure>summary{cursor:pointer;padding:20px 0;color:var(--muted);font-size:17px;line-height:1.6}
+.history-disclosure>summary::marker{color:var(--quiet);font-size:12px}
+.history-summary-note{font-size:13px;color:var(--quiet);margin-left:20px}
+.history-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:80px;padding:5px 0 12px}
+.history-intro{font-size:14px;line-height:1.9;color:var(--quiet)}
+.history-layout .history-content{border-top:0;padding-top:0}
+.history-selection select:disabled{color:var(--muted);opacity:1;background:#0d1218;border-color:var(--line)}
+@media(max-width:1100px){.history-layout{gap:45px}}
+@media(max-width:700px){.observation-history{padding-top:18px}.history-disclosure>summary{font-size:16px;padding:18px 0}.history-summary-note{font-size:12px;margin-left:12px}.history-layout{grid-template-columns:1fr;gap:20px;padding-top:4px}.regional-tools-note{font-size:13px}}

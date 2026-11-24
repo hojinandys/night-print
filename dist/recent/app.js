@@ -265,8 +265,15 @@ import { createPlayback } from './playback.mjs';
     $('compare-toggle').title = state.compare ? `${periodLabel(state.compareB)}의 한 작품으로 돌아갑니다` : '현재 보는 관측과 다른 시점을 나란히 봅니다';
     $('regional-guide').textContent = state.region === 'all' ? '안내 감상' : `${label(region())}의 이야기`;
     $('regional-guide').setAttribute('aria-expanded', String(state.guide !== null));
+    const regionalToolsUnavailable = state.region === 'all';
+    ['compare-toggle', 'quality-toggle'].forEach((id) => {
+      $(id).disabled = regionalToolsUnavailable;
+      if (regionalToolsUnavailable) $(id).setAttribute('aria-describedby', 'regional-tools-note');
+      else $(id).removeAttribute('aria-describedby');
+    });
+    $('regional-tools-note').hidden = !regionalToolsUnavailable;
     $('quality-toggle').setAttribute('aria-pressed', String(state.quality));
-    $('info-toggle').disabled = state.region === 'all';
+    $('info-toggle').disabled = regionalToolsUnavailable;
     $('quality-panel').hidden = !state.quality;
     document.querySelectorAll('[data-mode]').forEach((button) => { button.disabled = state.compare; });
     if (state.compare) {
@@ -454,12 +461,11 @@ import { createPlayback } from './playback.mjs';
     document.querySelectorAll('.guide-progress span').forEach((node,index) => { node.classList.toggle('active',index === state.guide); node.classList.toggle('complete',index < state.guide); if(index === state.guide) node.setAttribute('aria-current','step'); else node.removeAttribute('aria-current'); });
   }
   function toggleComparison() {
-    if (!state.data) return;
+    if (!state.data || state.region === 'all') return;
     // Enter from the observation already being viewed; leaving keeps B and
     // the selected district/camera instead of jumping to a different year.
     if (!state.compare) state.compareB = year();
     leaveGuide(); stopPlay(); state.compare = !state.compare;
-    if (state.region === 'all') { state.region = state.data.regions.find((r) => r.id === 'seoul')?.id || state.data.regions[0].id; state.interaction = null; state.district = null; }
     state.mode = 'absolute'; state.yearIndex = yearIndex(state.compareB);
     render(); announce(state.compare ? '비교 켜짐. A와 B를 함께 회전합니다. 비교 끄기를 누르면 한 작품으로 돌아갑니다.' : `비교 꺼짐. ${periodName(year())}의 한 작품을 크게 감상합니다.`);
   }
@@ -509,13 +515,17 @@ import { createPlayback } from './playback.mjs';
     if (!history?.editions?.length) { selector.disabled = true; selector.replaceChildren(new Option('기록 준비 중','')); $('history-status').textContent = '관측 기록을 불러오지 못했습니다. 현재 작품의 관측은 그대로 볼 수 있습니다.'; return; }
     const selected = history.editions.find((entry) => entry.id === (state.archiveId || history.current_id)) || history.editions[0];
     selector.replaceChildren(); history.editions.forEach((entry) => selector.add(new Option(`${entry.label || entry.period_label || entry.id}${entry.is_current || entry.id === history.current_id ? ' · 현재' : ''}`,entry.id)));
-    selector.value = selected.id; selector.disabled = false;
+    selector.value = selected.id; selector.disabled = state.historyLoading || history.editions.length < 2;
     $('history-latest').hidden = !state.archiveId;
     $('history-status').textContent = state.archiveId ? '기록된 판을 보고 있습니다. 이 판은 새 자료가 와도 자동으로 바뀌지 않습니다.' : history.editions.length === 1 ? '첫 기록 · 다음 자료부터 이전 판이 쌓입니다.' : '현재 공개된 판입니다. 새 관측이 검증되면 이전 판과 함께 기록됩니다.';
     const date = selected.recorded_at && !Number.isNaN(new Date(selected.recorded_at).getTime()) ? new Date(selected.recorded_at).toLocaleString('ko-KR',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'}) : '기록 시각 없음';
     $('history-period').textContent = `관측 ${selected.period_label || `${selected.observed_from}–${selected.observed_to}`} · 기록 ${date}`;
-    $('history-summary').textContent = selected.summary || selected.reason || '검증된 관측과 그때의 공통 관측 영역을 보존했습니다.';
-    $('history-changes').replaceChildren(); (selected.changes || []).filter((value) => typeof value === 'string').forEach((value) => $('history-changes').append(el('li','',value)));
+    const summary = (selected.summary || selected.reason || '검증된 관측과 그때의 공통 관측 영역을 보존했습니다.').trim();
+    $('history-summary').textContent = summary;
+    const changes = [...new Set((selected.changes || []).filter((value) => typeof value === 'string').map((value) => value.trim()))]
+      .filter((value) => value && value !== summary);
+    $('history-changes').replaceChildren(...changes.map((value) => el('li','',value)));
+    $('history-changes').hidden = changes.length === 0;
   }
   async function loadHistory() {
     try {
@@ -540,7 +550,12 @@ import { createPlayback } from './playback.mjs';
       if (token !== historyToken) return;
       state.archiveId = previousArchiveId;
       renderHistory(); $('history-status').textContent = '이 기록을 불러오지 못해 현재 작품을 유지했습니다. 잠시 후 다시 선택해 주세요.';
-    } finally { if (token === historyToken) state.historyLoading = false; }
+    } finally {
+      if (token === historyToken) {
+        state.historyLoading = false;
+        $('history-select').disabled = (state.history?.editions?.length || 0) < 2;
+      }
+    }
   }
   function preloadNext() {
     if (!state.data || state.compare || state.yearIndex >= state.data.years.length - 1) return;
@@ -648,9 +663,8 @@ import { createPlayback } from './playback.mjs';
   $('compare-toggle').addEventListener('click',toggleComparison);
   ['compare-a','compare-b'].forEach((id) => $(id).addEventListener('change', (event) => { leaveGuide(); stopPlay(); state[id === 'compare-a' ? 'compareA' : 'compareB'] = Number(event.target.value); state.yearIndex = yearIndex(state.compareB); render(); }));
   $('quality-toggle').addEventListener('click', () => {
-    if (!state.data) return;
+    if (!state.data || state.region === 'all') return;
     state.quality = !state.quality;
-    if (state.region === 'all') { leaveGuide(); state.region = state.data.regions[0].id; state.interaction = null; }
     if (state.quality) { state.infoHidden = false; syncInfo(); }
     render(); viewer?.setQualityVisible?.(state.quality);
   });
