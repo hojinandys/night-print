@@ -13,9 +13,9 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   let loadingKey = '', loadingPromise = null, mapToken = 0, historyToken = 0, yearRequest = 0;
   let viewerModulePromise = null, webglUnavailable = false, rendererUnavailable = false;
   const imageCache = new Map();
-  const viewerModule = () => viewerModulePromise ||= import('./viewer3d.js?v=f3c8217b066a');
+  const viewerModule = () => viewerModulePromise ||= import('./viewer3d.js?v=cc337abdce20');
   let viewerPromise = null, viewer = null, viewerKey = '', viewerReady = false, pendingFocus = null;
-  let pendingPlaceFocus = null, pendingComparison = null;
+  let pendingPlaceFocus = null, pendingComparison = null, pendingYearPresentation = null;
   const finite = (v) => typeof v === 'number' && Number.isFinite(v);
   const fmt = (v, digits = 1, signed = false) => finite(v) ? `${signed && v > 0 ? '+' : ''}${v.toFixed(digits)}` : '—';
   const pct = (v, signed = false) => `${fmt(v, 1, signed)}${finite(v) ? '%' : ''}`;
@@ -254,14 +254,13 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
     },
     present: async (index) => {
       const request = yearRequest;
-      state.yearIndex = index;
-      if (await render() === false) throw new Error('Observation could not be displayed');
+      if (!await presentYear(index, request)) return;
       if (request !== yearRequest || !playback.playing) return;
       $('timeline-caption').textContent = state.mode === 'change' && year() === baseline()
         ? '기준 관측 · 같은 값을 뺀 차이는 0입니다'
-        : '실제 관측을 한 장면씩 · 같은 시선과 높이 규칙';
+        : '관측 사이를 부드럽게 연결 · 중간 움직임은 시각적 보간';
     },
-    delayMs: () => reducedMotion.matches ? 3200 : 2400,
+    delayMs: () => reducedMotion.matches ? 3200 : 1800,
     onState: syncPlayback,
     onError: () => { $('timeline-caption').textContent = '다음 관측을 불러오지 못해 멈췄습니다. 현재 장면은 유지합니다. 다시 재생해 주세요.'; },
   });
@@ -275,6 +274,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   }
   function stopPlay() {
     ++yearRequest;
+    cancelYearPresentation();
     cancelPendingComparison();
     playback.stop();
     syncPlayback(false);
@@ -338,7 +338,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
     if (!state.data || state.compare) return;
     leaveGuide(); clearPlaceStory();
     if (playback.playing) { stopPlay(); return; }
-    ++yearRequest;
+    stopPlay();
     const first = state.yearIndex === state.data.years.length - 1 ? 0 : state.yearIndex;
     playback.start(state.data.years.map((_, index) => index).slice(first));
   }
@@ -352,10 +352,74 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
     try {
       await prepareYear(index);
       if (request !== yearRequest) return;
-      state.yearIndex = index; await render();
-      if (request === yearRequest) $('timeline-caption').textContent = '같은 관측 영역 · 같은 높이 규칙';
+      await presentYear(index, request);
+      if (request === yearRequest) $('timeline-caption').textContent = '같은 관측 영역 · 중간 움직임은 시각적 보간';
     } catch (error) {
       if (request === yearRequest) $('timeline-caption').textContent = '관측을 불러오지 못했습니다. 현재 장면을 유지합니다. 연도를 다시 선택해 주세요.';
+    }
+  }
+  function cancelYearPresentation() {
+    const pending = pendingYearPresentation;
+    pendingYearPresentation = null;
+    viewer?.cancelSurfaceTransition?.();
+    if (!pending) return;
+    for (const animation of pending.animations) animation.cancel();
+    for (const overlay of pending.overlays) overlay.remove();
+    if (state.data) renderHeading();
+    $('artwork').removeAttribute('data-observation-transition');
+  }
+  async function fadeYearImages(index, pending) {
+    const targets = state.region === 'all'
+      ? state.data.regions.map((r, i) => ({ image: $('comparison').querySelectorAll('.plate-image-wrap img')[i], region: r }))
+      : [{ image: $('single-image'), region: region() }];
+    for (const { image, region: r } of targets) {
+      if (!image?.animate || !image.parentElement) continue;
+      const overlay = image.cloneNode(false); overlay.removeAttribute('id'); overlay.setAttribute('aria-hidden', 'true'); overlay.alt = '';
+      if (state.region !== 'all') { overlay.style.position = 'absolute'; overlay.style.inset = '0'; }
+      overlay.src = imagePath(r, state.data.years[index], state.mode);
+      overlay.style.pointerEvents = 'none'; overlay.style.opacity = '0';
+      image.parentElement.append(overlay); pending.overlays.push(overlay);
+      pending.animations.push(overlay.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 850, easing: 'cubic-bezier(.45,0,.55,1)', fill: 'forwards' }));
+    }
+    try { await Promise.all(pending.animations.map(animation => animation.finished)); return true; }
+    catch { return false; }
+  }
+  async function presentYear(index, request) {
+    if (request !== yearRequest || !state.data) return false;
+    if (index === state.yearIndex) return true;
+    const pending = { data: state.data, region: state.region, mode: state.mode, animations: [], overlays: [] };
+    pendingYearPresentation = pending;
+    const current = () => pendingYearPresentation === pending && request === yearRequest &&
+      state.data === pending.data && state.region === pending.region && state.mode === pending.mode && !state.compare;
+    try {
+    const from = year(), to = state.data.years[index];
+    if (!reducedMotion.matches) {
+      $('artwork').setAttribute('data-observation-transition', 'true');
+      $('scene-year').textContent = `${periodLabel(from)} → ${periodLabel(to)}`;
+      $('scene-year-note').textContent = '전환 중 · 중간 표면은 관측값이 아닙니다';
+      $('timeline-caption').textContent = `${periodName(from)} → ${periodName(to)} · 시각적 연결 중 · 수치는 ${periodName(from)} 관측`;
+      const complete = state.region !== 'all' && viewerReady && !webglUnavailable && !rendererUnavailable
+        ? await viewer.transitionTo(region(), to, state.mode)
+        : await fadeYearImages(index, pending);
+      if (!complete) {
+        if (current()) { cancelYearPresentation(); throw new Error('Observation transition interrupted'); }
+        return false;
+      }
+      if (!current()) return false;
+    }
+    if (!current()) return false;
+    state.yearIndex = index;
+    const displayed = await render();
+    if (!current()) return false;
+    pendingYearPresentation = null;
+    for (const animation of pending.animations) animation.cancel();
+    for (const overlay of pending.overlays) overlay.remove();
+    $('artwork').removeAttribute('data-observation-transition');
+    if (displayed === false) throw new Error('Observation could not be displayed');
+    return true;
+    } catch (error) {
+      if (pendingYearPresentation === pending) cancelYearPresentation();
+      throw error;
     }
   }
   function prepareImage(url) {
@@ -393,6 +457,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   }
   function selectDistrict(id) {
     if (!state.data || state.region === 'all') return;
+    stopPlay();
     cancelPendingComparison();
     leaveGuide(); clearPlaceStory(); state.district = id || null; state.zoom = !!id; renderDetail();
     if (viewerReady) { viewer.select(id); if (id) viewer.focus(id); }
@@ -859,7 +924,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   }
   function initialize(data, refreshing = false) {
     if (!Array.isArray(data.years) || !data.years.length || !Array.isArray(data.regions) || data.regions.length !== 3) throw new Error('Invalid artwork manifest');
-    cancelPendingComparison();
+    cancelYearPresentation(); cancelPendingComparison();
     clearPlaceStory();
     if (!state.data) {
       const hash = window.location.hash.slice(1);
@@ -907,6 +972,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   ['compare-a','compare-b'].forEach((id) => $(id).addEventListener('change', (event) => setComparison(id === 'compare-a' ? 'a' : 'b', event.target.value)));
   $('quality-toggle').addEventListener('click', () => {
     if (!state.data || state.region === 'all') return;
+    stopPlay();
     state.quality = !state.quality;
     if (state.quality) { state.infoHidden = false; syncInfo(); }
     render(); viewer?.setQualityVisible?.(state.quality);

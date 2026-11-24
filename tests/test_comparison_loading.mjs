@@ -34,7 +34,7 @@ function harness() {
     leaveGuide(){},clearPlaceStory(){state.placeStory=null;},
     render(){commits.push({region:state.region,a:state.compareA,b:state.compareB,index:state.yearIndex});return Promise.resolve(true);},
     prepareComparison(r,a,b){const p=deferred();pending.push({...p,region:r.id,a,b});return p.promise;},
-    reducedMotion:{matches:true},announce:m=>announcements.push(m),
+    reducedMotion:{matches:true},announce:m=>announcements.push(m),cancelYearPresentation(){},
   });
   vm.runInContext(['syncComparisonControls','cancelPendingComparison','stopPlay','setComparison',
     'setRegion','toggleComparison'].map(appFunction).join('\n'),context);

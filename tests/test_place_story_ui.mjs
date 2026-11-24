@@ -98,6 +98,7 @@ test('manual region and year changes leave case context before the next surface 
   context.periodName = String;
   let resolve;
   context.prepareYear = () => new Promise((done) => { resolve = done; });
+  context.presentYear = async index => { context.state.yearIndex = index; return true; };
   vm.runInContext(applicationFunction('setYear'), context);
   const pending = context.setYear(2);
   assert.equal(context.state.placeStory, null, 'Old interpretation disappears while the requested year is loading');

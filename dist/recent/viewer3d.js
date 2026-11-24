@@ -4,6 +4,7 @@ import { RoomEnvironment } from './vendor/RoomEnvironment.js';
 import { LineSegments2 } from './vendor/LineSegments2.js';
 import { LineSegmentsGeometry } from './vendor/LineSegmentsGeometry.js';
 import { LineMaterial } from './vendor/LineMaterial.js';
+import { compatibleSurface, createSurfaceTransition } from './surface-transition.mjs?v=47a0cd0446a3';
 
 // Three.js 0.187.0, distributed locally under the included MIT license.
 // Geometry packets preserve the original Blender display geometry; values are never inferred from images.
@@ -175,7 +176,7 @@ export class ReliefViewer {
     this.camera = new THREE.OrthographicCamera(-9.25, 9.25, 5.203, -5.203, .1, 150); this.camera.up.set(0, 0, 1);
     this.controls = new OrbitControls(this.camera, this.canvas);
     this.controls.enableDamping = !this.reduced.matches; this.controls.dampingFactor = .09;
-    this.reduced.addEventListener('change', () => { this.controls.enableDamping = !this.reduced.matches; this.transition = null; this.dirty = true; });
+    this.reduced.addEventListener('change', () => { this.controls.enableDamping = !this.reduced.matches; this.transition = null; if (this.reduced.matches) this.cancelSurfaceTransition(); this.dirty = true; });
     this.controls.minPolarAngle = .13; this.controls.maxPolarAngle = Math.PI * .49;
     this.controls.minZoom = .65; this.controls.maxZoom = 5; this.controls.rotateSpeed = .7; this.controls.zoomSpeed = .8;
     this.controls.screenSpacePanning = true;
@@ -205,9 +206,10 @@ export class ReliefViewer {
     this.floorShadow.receiveShadow = true; this.scene.add(this.floor, this.floorShadow);
     this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(this.host);
     this.canvas.addEventListener('keydown', (event) => this.key(event));
-    this.canvas.addEventListener('webglcontextlost', (event) => { event.preventDefault(); this.contextLost = true; this.active = false; ++this.generation; this.onError?.(new Error('WebGL context lost')); });
+    this.canvas.addEventListener('webglcontextlost', (event) => { event.preventDefault(); this.cancelSurfaceTransition(); this.contextLost = true; this.active = false; ++this.generation; this.onError?.(new Error('WebGL context lost')); });
     this.renderer.setAnimationLoop((time) => {
       if (!this.active || document.hidden) return;
+      this.surfaceMotion?.tick(time);
       if (this.transition) {
         const t = Math.min(1, (time - this.transition.start) / 550), eased = 1 - Math.pow(1 - t, 3), move = this.transition;
         this.camera.position.lerpVectors(move.fromPosition, move.toPosition, eased);
@@ -248,7 +250,7 @@ export class ReliefViewer {
       const x = pane.left * width, y = (1 - pane.top - pane.height) * height;
       this.renderer.setViewport(x, y, pane.width * width, pane.height * height);
       this.renderer.setScissor(x, y, pane.width * width, pane.height * height);
-      this.dynamic.visible = this.selection.visible = index === 0;
+      this.dynamic.visible = index === 0; this.selection.visible = index === 0 && !this.surfaceMotion && !this.surfacePendingCommit;
       this.secondary.visible = this.secondarySelection.visible = index === 1;
       // Both observations use this exact camera, lighting, and original height
       // scale. Scissoring needs only one WebGL context and one set of controls.
@@ -267,6 +269,7 @@ export class ReliefViewer {
     this.onView?.({ northAngle: Math.atan2(dx, dy) * 180 / Math.PI, comparing: this.comparing, comparisonAxis: this.comparisonAxis, qualityAvailable: !!this.interaction?.missing });
   }
   async show(region, year, mode, { compareYear, interaction } = {}) {
+    this.cancelSurfaceTransition();
     if (this.contextLost) throw new Error('Reload required after WebGL context loss');
     const generation = ++this.generation, spec = region.webgl;
     if (!spec) throw new Error('3D geometry not available');
@@ -288,6 +291,7 @@ export class ReliefViewer {
     this.spec = spec; this.base = base; this.frame = frame; this.secondFrame = secondFrame;
     this.region = region; this.regionId = region.id; this.mode = mode; this.comparing = comparing; this.year = year; this.compareYear = compareYear;
     this.sampler = surfaceSampler(base, frame); this.secondSampler = secondFrame ? surfaceSampler(base, secondFrame) : null;
+    this.surfacePendingCommit = false;
     if (regionChanged || modeChanged || baseChanged) this.buildFixed(base, mode);
     this.buildSurface(this.dynamic, base, frame);
     disposeGroup(this.secondary); if (secondFrame) this.buildSurface(this.secondary, base, secondFrame);
@@ -296,6 +300,112 @@ export class ReliefViewer {
       ? `${year}년과 ${compareYear}년 실제 야간광 입체 비교. 두 시점이 함께 회전합니다. 방향키 회전, 더하기와 빼기 확대, R 원래 시점.`
       : `${year}년 실제 야간광 입체. 방향키 회전, 더하기와 빼기 확대, R 원래 시점.`);
     this.makeMarkers(region); this.resize(); if (regionChanged) this.reset(false); this.dirty = true; return true;
+  }
+  cancelSurfaceTransition() {
+    this.surfaceGeneration = (this.surfaceGeneration || 0) + 1;
+    this.surfaceMotion?.cancel();
+  }
+  async transitionTo(region, year, mode, { duration = 1100 } = {}) {
+    this.cancelSurfaceTransition();
+    const generation = this.surfaceGeneration, spec = region.webgl;
+    if (this.reduced.matches || !this.active || this.contextLost || this.comparing ||
+        this.regionId !== region.id || this.mode !== mode || this.spec?.static_url !== spec?.static_url || Number(this.year) === Number(year)) return true;
+    const url = spec.frames?.[mode]?.find(item => Number(item.year) === Number(year))?.url;
+    if (!url) throw new Error('Transition observation unavailable');
+    const target = await packet(url);
+    if (generation !== this.surfaceGeneration || !this.active || this.contextLost) return false;
+    // Different masks/triangulations are separate observations, never bridged
+    // with invented surfaces across an unobserved area.
+    if (!compatibleSurface(this.frame, target, this.base)) return this.crossfadeSurface(target, year);
+    const body = this.dynamic.children.find(item => item.isMesh && !item.isLineSegments2);
+    if (!body) return true;
+    const incoming = new THREE.Group(); this.buildSurface(incoming, this.base, target);
+    const nextBody = incoming.children.find(item => item.isMesh && !item.isLineSegments2);
+    const nextSampler = surfaceSampler(this.base, target), previousSampler = this.sampler;
+    const geometry = body.geometry;
+    geometry.morphAttributes.position = [nextBody.geometry.getAttribute('position')];
+    geometry.morphAttributes.normal = [nextBody.geometry.getAttribute('normal')];
+    geometry.morphTargetsRelative = false; body.updateMorphTargets(); body.morphTargetInfluences[0] = 0;
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    nextBody.visible = false; this.scene.add(incoming);
+    // Contours have different topology every year. Each endpoint's own lines
+    // follow the moving surface, then crossfade; unrelated vertices never lerp.
+    const contourTracks = [];
+    const trackContours = (group, sampler, entering) => {
+      for (const line of group.children.filter(item => item.isLineSegments2)) {
+        const attribute = line.geometry.getAttribute('instanceStart'), buffer = attribute.data;
+        const exact = new Float32Array(buffer.array), other = new Float32Array(exact);
+        for (let i = 0; i < other.length; i += 3) {
+          const z = sampler.height(exact[i], exact[i + 1]);
+          other[i + 2] = z === null ? exact[i + 2] : z;
+        }
+        contourTracks.push({ line, buffer, exact, other, entering, transparent: line.material.transparent, opacity: line.material.opacity });
+        line.material.transparent = true; line.material.needsUpdate = true; line.frustumCulled = false;
+      }
+    };
+    trackContours(this.dynamic, nextSampler, false); trackContours(incoming, previousSampler, true);
+    const oldLabel = this.canvas.getAttribute('aria-label');
+    this.canvas.setAttribute('aria-label', `${this.year}년에서 ${year}년으로 시각적 전환 중. 중간 표면은 두 실제 관측 사이의 보간이며 별도 관측이 아닙니다.`);
+    const motion = createSurfaceTransition({ duration, start: performance.now(),
+      apply: t => {
+        body.morphTargetInfluences[0] = t;
+        for (const track of contourTracks) {
+          const { buffer, exact, other, entering, line } = track;
+          const mix = entering ? 1 - t : t;
+          for (let i = 2; i < exact.length; i += 3) buffer.array[i] = exact[i] + (other[i] - exact[i]) * mix;
+          buffer.needsUpdate = true; line.material.opacity = entering ? t : 1 - t;
+        }
+        this.dirty = true;
+      },
+      finish: complete => {
+        for (const track of contourTracks) {
+          track.buffer.array.set(track.exact); track.buffer.needsUpdate = true;
+          track.line.material.opacity = track.opacity; track.line.material.transparent = track.transparent; track.line.material.needsUpdate = true;
+        }
+        if (complete) {
+          disposeGroup(this.dynamic); nextBody.visible = true;
+          while (incoming.children.length) this.dynamic.add(incoming.children[0]);
+          this.surfacePendingCommit = true;
+        } else {
+          // Three caches a morph texture by geometry and target count. Reusing
+          // this geometry for a different one-target motion after Stop would
+          // retain the cancelled destination. Dispose and rebuild the exact
+          // source observation so both GPU cache and contours reset together.
+          disposeGroup(incoming); this.buildSurface(this.dynamic, this.base, this.frame);
+        }
+        this.scene.remove(incoming); this.surfaceMotion = null;
+        this.canvas.setAttribute('aria-label', oldLabel); this.projectMarkers(); this.dirty = true;
+      },
+    });
+    this.surfaceMotion = motion; motion.tick(performance.now()); this.markerLayer.hidden = true;
+    return motion.promise;
+  }
+  crossfadeSurface(target, year) {
+    // A changed footprint cannot be morphed. Blend the two exact observed
+    // geometries instead of manufacturing triangles between their masks.
+    const incoming = new THREE.Group(); this.buildSurface(incoming, this.base, target); this.scene.add(incoming);
+    const tracks = [];
+    for (const [group, entering] of [[this.dynamic, false], [incoming, true]]) {
+      group.traverse(object => {
+        if (!object.material) return;
+        const material = object.material;
+        tracks.push({ material, entering, opacity: material.opacity, transparent: material.transparent, depthWrite: material.depthWrite });
+        material.transparent = true; material.depthWrite = false; material.needsUpdate = true;
+      });
+    }
+    const oldLabel = this.canvas.getAttribute('aria-label');
+    this.canvas.setAttribute('aria-label', `${this.year}년에서 ${year}년으로 두 실제 관측을 겹쳐 전환 중. 중간 장면은 별도 관측이 아닙니다.`);
+    const motion = createSurfaceTransition({ duration: 700, start: performance.now(),
+      apply: t => { for (const track of tracks) track.material.opacity = track.opacity * (track.entering ? t : 1 - t); this.dirty = true; },
+      finish: complete => {
+        for (const { material, opacity, transparent, depthWrite } of tracks) { Object.assign(material, { opacity, transparent, depthWrite }); material.needsUpdate = true; }
+        if (complete) { disposeGroup(this.dynamic); while (incoming.children.length) this.dynamic.add(incoming.children[0]); this.surfacePendingCommit = true; }
+        else disposeGroup(incoming);
+        this.scene.remove(incoming); this.surfaceMotion = null; this.canvas.setAttribute('aria-label', oldLabel); this.projectMarkers(); this.dirty = true;
+      },
+    });
+    this.surfaceMotion = motion; motion.tick(performance.now()); this.markerLayer.hidden = true;
+    return motion.promise;
   }
   buildSurface(group, base, frame) {
     disposeGroup(group);
@@ -383,6 +493,7 @@ export class ReliefViewer {
     this.move(target.clone().add(offset), target, Math.max(2.4, this.camera.zoom), true);
   }
   projectMarkers() {
+    if (this.surfaceMotion || this.surfacePendingCommit) { this.markerLayer.hidden = true; return; }
     const panes = this.panes();
     let anyVisible = false;
     for (const item of this.markerNodes) {
@@ -484,5 +595,5 @@ export class ReliefViewer {
   }
   setMarkersVisible(visible) { this.markersVisible = !!visible; this.projectMarkers(); this.dirty = true; }
   setQualityVisible(visible) { this.qualityVisible = !!visible; this.quality.visible = this.qualityVisible; this.dirty = true; }
-  setActive(active) { this.active = active && !this.contextLost; if (this.active) { this.resize(); this.dirty = true; } }
+  setActive(active) { if (!active) this.cancelSurfaceTransition(); this.active = active && !this.contextLost; if (this.active) { this.resize(); this.dirty = true; } }
 }
