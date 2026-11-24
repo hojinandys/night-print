@@ -4,33 +4,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080b10">
-  <meta name="description" content="서울·부산·제주의 공개 야간광으로 읽는 데이터 아트. 밤을 한 방향으로 말하기 전에, 빛이 달라진 자리를 돌아봅니다.">
+  <meta name="description" content="서울·부산·제주의 공개 야간광으로 읽는 데이터 아트. 빛이 늘어난 곳과 줄어든 곳을 직접 돌아봅니다.">
   <title>밤의 지문 — 평균이 지운 자리</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=5c82677d036f">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-  <script src="./app.js" type="module"></script>
+  <script src="./app.js?v=e3c15f69484a" type="module"></script>
 </head>
 <body>
   <a class="skip-link" href="#artwork">작품으로 이동</a>
   <header class="site-header">
-    <a class="brand" href="./" aria-label="밤의 지문 처음으로"><span>밤의 지문</span><span class="brand-sub">평균이 지운 자리</span></a>
+    <a class="brand" href="./" aria-label="밤의 지문 처음으로"><span>성호진</span><span class="brand-sub">데이터 아트</span></a>
+    <nav id="edition-links" class="edition-links" aria-label="관측 판 선택" hidden></nav>
     <nav class="header-links" aria-label="작품 안내">
       <button type="button" data-dialog="guide-dialog">읽는 방법</button>
       <button type="button" data-dialog="source-dialog">자료와 갱신</button>
     </nav>
   </header>
-  <nav id="edition-links" class="edition-links" aria-label="관측 판 선택" hidden></nav>
 
   <main>
     <section class="opening" aria-labelledby="question-title">
-      <p class="eyebrow">SEOUL · BUSAN · JEJU <span id="edition">관측 자료</span></p>
-      <h1 id="question-title">밤이 달라졌다면,<br>어디가 달라졌을까.</h1>
-      <p id="opening-copy" class="opening-copy">서울·부산·제주의 밤을 한 방향으로 말하기 전에,<br class="mobile-break"> 빛이 달라진 자리를 돌아봅니다.</p>
+      <div class="opening-title"><p class="eyebrow">서울 · 부산 · 제주 <span id="edition">관측 자료</span></p>
+      <h1 id="question-title">밤의 지문</h1><p class="opening-subtitle">평균이 지운 자리</p></div>
+      <div class="opening-invitation"><p id="opening-copy" class="opening-copy">서울·부산·제주의 야간광을 입체로 옮겼습니다. 빛이 늘어난 곳과 줄어든 곳을 직접 돌아보세요.</p>
       <div class="story-actions">
-        <button id="start-guide" class="primary-action" type="button" disabled>세 지역 이야기 <span>네 장면으로 읽는 밤</span></button>
-        <button id="reveal-change" class="secondary-action" type="button">변화 살펴보기 <span>기준 관측과 비교</span></button>
-        <p id="story-hint">금빛 표면에서 시작해, 같은 자리의 변화를 살펴보세요.</p>
-      </div>
+        <button id="start-guide" class="primary-action" type="button" disabled>이야기 따라보기 <span aria-hidden="true">↗</span></button>
+        <button id="reveal-change" class="secondary-action" type="button">빛의 변화 보기 <span>기준 관측과 비교</span></button>
+        <p id="story-hint" class="sr-only">지역을 고르면 작품을 돌려 볼 수 있습니다.</p>
+      </div></div>
     </section>
 
     <section id="artwork" class="artwork" aria-labelledby="art-title" aria-busy="true">
@@ -41,10 +41,10 @@
           <button type="button" data-region="busan" aria-pressed="false">부산</button>
           <button type="button" data-region="jeju" aria-pressed="false">제주</button>
         </div>
-        <div class="mode-switch" role="group" aria-label="표현할 값">
+        <div class="toolbar-actions"><div class="mode-switch" role="group" aria-label="표현할 값">
           <button type="button" class="active" data-mode="absolute" aria-pressed="true">밝기</button>
           <button type="button" data-mode="change" aria-pressed="false">변화</button>
-        </div>
+        </div><button id="cinema-toggle" type="button" aria-pressed="false">화면 채우기</button></div>
       </div>
       <div class="experience-tools" role="group" aria-label="감상 도구">
         <button id="compare-toggle" type="button" aria-pressed="false" aria-controls="pair-controls single-viewport"><span class="compare-switch" aria-hidden="true"></span><span id="compare-action">비교 켜기</span></button>
@@ -52,15 +52,14 @@
         <button id="regional-guide" type="button" aria-controls="guided-story" disabled>이 지역 이야기</button>
         <span class="tools-spacer"></span>
         <button id="info-toggle" type="button" aria-expanded="true" aria-controls="place-panel">정보 접기</button>
-        <button id="cinema-toggle" type="button" aria-pressed="false">화면 채우기</button>
       </div>
       <p id="regional-tools-note" class="regional-tools-note" hidden>서울·부산·제주 중 한 지역을 고르면 두 시점 비교와 관측 범위를 볼 수 있습니다.</p>
       <section id="guided-story" class="guided-story" aria-labelledby="guide-step-title" hidden>
-        <div class="guide-progress" aria-label="감상 순서"><span>한 방향</span><span>다른 자리</span><span>밤의 지문</span><span>내가 볼 자리</span></div>
+        <div class="guide-progress" aria-label="감상 순서"><span>관측</span><span>변화</span><span>발견</span><span>나의 도시</span></div>
         <div class="guide-story-content"><div><p id="guide-step-count" class="panel-eyebrow">01 / 04</p><h2 id="guide-step-title" tabindex="-1"></h2><p id="guide-step-body"></p></div><div class="guide-navigation"><button id="guide-prev" type="button">이전</button><button id="guide-next" type="button">다음 장면</button><button id="guide-exit" type="button">자유롭게 감상</button></div></div>
       </section>
       <div class="scene-heading">
-        <div><p id="art-title" class="scene-title">한 숫자로 접기 전의 밤</p><p id="scene-description">높이는 관측된 야간광입니다. 지역을 누르면 안으로 들어갑니다.</p></div>
+        <div><p id="art-title" class="scene-title">빛을 높이로 옮기다</p><p id="scene-description">작품을 고르면 회전하며 살펴볼 수 있습니다.</p></div>
         <div class="year-heading"><strong id="scene-year">—</strong><span id="scene-year-note">관측값</span></div>
       </div>
 
@@ -73,6 +72,7 @@
       <div id="load-error" class="load-error" hidden><p>작품 자료를 불러오지 못했습니다.</p><button id="retry-load" type="button">다시 불러오기</button></div>
 
       <div id="comparison" class="comparison" hidden aria-label="세 지역 같은 시점 비교"></div>
+      <div id="overview-timeline"></div>
 
       <div id="region-detail" class="region-detail" hidden>
         <div class="detail-art">
@@ -91,9 +91,10 @@
           </div>
           <p id="orbit-instruction" class="orbit-instruction">지역의 입체 자료를 준비하고 있습니다.</p>
           <div class="detail-bottomline"><p id="point-instruction">지도나 목록에서 장소를 고르면 선택한 지점만 작품에 남습니다.</p><label class="markers-toggle"><input id="show-markers" type="checkbox"> 전체 지점 표시</label></div>
+          <div id="detail-timeline"></div>
         </div>
         <aside id="place-panel" class="place-panel" aria-labelledby="place-title">
-          <p class="panel-eyebrow">평균 안으로</p>
+          <p class="panel-eyebrow">지역 기록</p>
           <label class="select-label" for="district-select">구·군·시 선택</label>
           <div class="select-wrap"><select id="district-select"><option value="">전체 지역</option></select></div>
           <h2 id="place-title">서울특별시</h2>
@@ -127,8 +128,8 @@
     </section>
 
     <section class="afterword" aria-labelledby="afterword-title">
-      <div><p class="eyebrow">평균이 지운 자리</p><h2 id="afterword-title">밤이 달라졌다는<br>말 다음에.</h2></div>
-      <div class="afterword-body"><p id="afterword-main">어느 자리가 어떻게 변했는지 묻습니다. 평균은 변화를 요약하지만, 장소마다 달라진 빛의 위치를 대신 보여 주지는 못합니다. 이 작품의 ‘지문’은 그 배치와 변화가 남긴 모양입니다. 하나의 방향이나 순위로 읽기 전에, 내가 지나친 자리를 다시 보는 것이 이 감상의 끝입니다.</p><p id="afterword-update">새로운 관측을 확보하면, 같은 경계와 기준으로 다시 계산합니다. 작품은 관측이 늘어나는 만큼 이 질문을 이어 갑니다.</p><button type="button" data-dialog="source-dialog" class="text-action">다음 관측을 기다리는 방식</button></div>
+      <div><p class="eyebrow">작가의 글</p><h2 id="afterword-title">내가 아는 도시는<br>어떻게 변했을까.</h2></div>
+      <div class="afterword-body"><p id="afterword-main">도시가 밝아졌다는 말만으로는 동네마다 생긴 변화를 알 수 없습니다. 그래서 빛을 평균값 하나로만 보여 주지 않고, 원래의 위치에 높이로 세웠습니다. 멀리서는 도시의 모양을, 가까이서는 그 안의 차이를 봅니다. 익숙한 곳을 찾아본 뒤 처음의 전체 모습으로 돌아와 보세요.</p><p id="afterword-update">빛이 줄었다는 사실만으로 그곳의 사정을 알 수는 없습니다. 이 작품은 원인을 답하기보다, 도시를 한 숫자로 이해할 때 놓치는 곳을 보여 주려 합니다.</p><button type="button" data-dialog="source-dialog" class="text-action">다음 관측을 기다리는 방식</button></div>
     </section>
     <section class="observation-history" aria-labelledby="history-title">
       <details class="history-disclosure">
@@ -152,7 +153,7 @@
 
   <dialog id="source-dialog" class="info-dialog" aria-labelledby="source-title">
     <form method="dialog"><button class="close-dialog" aria-label="자료 설명 닫기">닫기</button></form>
-    <p class="eyebrow">이어지는 관측</p><h2 id="source-title">새로운 관측에도,<br>같은 자리에서 다시 묻습니다.</h2>
+    <p class="eyebrow">이어지는 관측</p><h2 id="source-title">자료는 어떻게 작품이 될까</h2>
     <p id="source-lead" class="dialog-lead">야간광은 빛이면서 관측된 수치입니다. 같은 좌표를 여러 시점에 걸쳐 읽을 수 있어, 평균과 그 안의 장소를 하나의 질문으로 연결합니다.</p>
     <dl class="release-status"><div><dt>작품의 관측 기간</dt><dd id="release-years">관측 자료를 불러오는 중</dd></div><div><dt>자료 확인</dt><dd id="release-checked">확인 기록을 불러오는 중</dd></div><div><dt>현재 상태</dt><dd id="release-status">자료를 불러오는 중</dd></div></dl>
     <ol class="update-flow"><li><strong>새 자료 확인</strong><span id="update-discovery">공식 제공처의 관측 목록을 확인합니다.</span></li><li><strong>같은 기준 검증</strong><span>제품·격자·파일과 관측 범위를 검증합니다.</span></li><li><strong>표면 다시 만들기</strong><span>고정 경계와 공통 관측 영역에서 수치와 조형을 다시 계산합니다.</span></li><li><strong>작품에 반영</strong><span>완성된 결과와 갱신 이력을 함께 공개합니다.</span></li></ol>

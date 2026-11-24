@@ -225,7 +225,11 @@ export class ReliefViewer {
     this.comparisonAxis = width < 640 ? 'vertical' : 'horizontal';
     const paneWidth = this.comparing && this.comparisonAxis === 'horizontal' ? width / 2 : width;
     const paneHeight = this.comparing && this.comparisonAxis === 'vertical' ? height / 2 : height;
-    const cameraWidth = this.spec?.camera?.ortho_width || 18.5, halfHeight = cameraWidth * paneHeight / paneWidth / 2;
+    const baseWidth = this.spec?.camera?.ortho_width || 18.5;
+    // Wider windows retain the original 16:9 vertical field instead of cropping
+    // tall peaks or outlying islands. Both comparison panes share this framing.
+    const cameraWidth = baseWidth * Math.max(1, (paneWidth / paneHeight) / (16 / 9));
+    const halfHeight = cameraWidth * paneHeight / paneWidth / 2;
     const shift = this.spec?.camera?.shift_y || 0;
     this.camera.left = -cameraWidth / 2; this.camera.right = cameraWidth / 2;
     this.camera.top = halfHeight + cameraWidth * shift; this.camera.bottom = -halfHeight + cameraWidth * shift;
