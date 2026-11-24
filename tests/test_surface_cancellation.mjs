@@ -47,3 +47,28 @@ test('cancelling then choosing another year disposes the cached morph geometry b
   assert.equal(viewer.dynamic.children[0].geometry.getAttribute('position').array[2],9);
   assert.equal(viewer.surfacePendingCommit,true,'Markers stay hidden until the app commits matching numbers');
 });
+test('an incompatible observed footprint forwards the selected speed to its geometry fade',async()=>{
+  const calls=[],region={id:'test',webgl:{static_url:'base',frames:{absolute:[{year:2016,url:'next'}]}}};
+  const viewer={regionId:'test',mode:'absolute',spec:region.webgl,year:2015,active:true,reduced:{matches:false},
+    cancelSurfaceTransition(){this.surfaceGeneration=(this.surfaceGeneration||0)+1;},
+    crossfadeSurface(target,year,options){calls.push({year,duration:options.duration});return Promise.resolve(true);}};
+  const context=vm.createContext({viewer,packet:async()=>({}),compatibleSurface:()=>false});
+  vm.runInContext(`Object.assign(viewer,{${method('transitionTo')}})`,context);
+  assert.equal(await viewer.transitionTo(region,2016,'absolute',{duration:4400}),true);
+  assert.deepEqual(calls,[{year:2016,duration:2800}]);
+});
+test('the geometry fade finishes only after its requested speed-controlled duration',async()=>{
+  const viewer={year:2015,base:{},dynamic:new Group(),scene:new Group(),markerLayer:{},
+    canvas:{getAttribute:()=> '2015 actual',setAttribute(){}},projectMarkers(){},
+    buildSurface(group){group.add({material:{opacity:1,transparent:false,depthWrite:true,dispose(){}}});},
+  };
+  viewer.buildSurface(viewer.dynamic);
+  const context=vm.createContext({viewer,THREE:{Group},createSurfaceTransition,disposeGroup,performance:{now:()=>0}});
+  vm.runInContext(`Object.assign(viewer,{${method('crossfadeSurface')}})`,context);
+  let complete=false;
+  const completion=viewer.crossfadeSurface({},2016,{duration:2800}).then(value=>{complete=true;return value;});
+  viewer.surfaceMotion.tick(2799);await Promise.resolve();
+  assert.equal(complete,false);assert.equal(viewer.surfacePendingCommit,undefined);
+  viewer.surfaceMotion.tick(2800);
+  assert.equal(await completion,true);assert.equal(viewer.surfacePendingCommit,true);
+});

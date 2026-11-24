@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#080b10">
   <meta name="description" content="서울·부산·제주의 공개 야간광으로 읽는 데이터 아트. 빛이 늘어난 곳과 줄어든 곳을 직접 돌아봅니다.">
   <title>밤의 지문 — 평균이 지운 자리</title>
-  <link rel="stylesheet" href="./style.css?v=d57c5f5dbcdc">
+  <link rel="stylesheet" href="./style.css?v=33310b3d155b">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-  <script src="./app.js?v=e9f3af472354" type="module"></script>
+  <script src="./app.js?v=4b1119c00f53" type="module"></script>
 </head>
 <body>
   <a class="skip-link" href="#artwork">작품으로 이동</a>
@@ -139,7 +139,8 @@
       </section>
 
       <div id="timeline" class="timeline" hidden>
-        <div class="timeline-top"><button id="play-years" class="play-button" type="button" aria-label="관측 재생"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5 19 12 8 18.5Z" fill="currentColor"/></svg><span>관측 재생</span></button><p id="timeline-caption">같은 관측 영역 · 같은 높이 규칙</p><output id="selected-year" for="year-slider">—</output></div>
+        <div class="timeline-top"><button id="play-years" class="play-button" type="button" aria-label="관측 재생"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5 19 12 8 18.5Z" fill="currentColor"/></svg><span>관측 재생</span></button><label class="playback-speed-control" for="playback-speed"><span>속도</span><select id="playback-speed" aria-describedby="playback-speed-note" title="전환과 감상 시간을 함께 조절합니다. 진행 중인 단계는 마친 뒤 적용됩니다."><option value="0.25">0.25× 아주 천천히</option><option value="0.5" selected>0.5× 천천히</option><option value="1">1× 기본</option><option value="2">2× 빠르게</option></select></label><p id="timeline-caption">같은 관측 영역 · 같은 높이 규칙</p><output id="selected-year" for="year-slider">—</output></div>
+        <p id="playback-speed-note" class="sr-only">전환과 감상 시간을 함께 조절합니다. 진행 중인 전환과 감상 시간은 마친 뒤 새 속도를 적용합니다.</p>
         <label id="timeline-label" class="sr-only" for="year-slider">관측 시점</label>
         <input id="year-slider" class="year-slider" type="range" min="0" max="8" step="1" value="8">
         <div id="year-ticks" class="year-ticks" aria-label="관측 시점 바로 선택"></div>

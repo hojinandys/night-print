@@ -136,7 +136,7 @@ test('map uses exact transformed bounds and 3D focus waits for the matching pair
 });
 
 test('the case sidebar shows local decline and restores administrative scope on exit', () => {
-  const story = stories.find((item) => item.id === 'dunchon'), context = harness();
+  const story = stories.find((item) => item.id === 'seoul-residential'), context = harness();
   context.state.placeStory = story.id; context.state.region = story.region;
   vm.runInContext(applicationFunction('renderPlaceSummary') + applicationFunction('clearPlaceStory'), context);
   context.renderPlaceSummary();

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPlayback } from '../dist/playback.mjs';
+import { createPlaybackSpeed } from '../dist/playback-speed.mjs';
 
 function deferred() {
   let resolve, reject;
@@ -34,6 +35,36 @@ function clock() {
 }
 
 const settle = async () => { for (let i = 0; i < 8; i++) await Promise.resolve(); };
+
+test('changing speed during viewing preserves the pending interval without repeating or skipping years', async () => {
+  const timing = clock(), shown = [], speed = createPlaybackSpeed();
+  const playback = createPlayback({ prepare() {}, present: index => shown.push(index),
+    delayMs: () => speed.timing().dwellMs, ...timing });
+  const completion = playback.start([0, 1, 2]);
+  await settle();
+  assert.equal(timing.scheduled[0].delay, 3600);
+  timing.advance(500); speed.set(2); await settle();
+  assert.equal(playback.playing, true);
+  assert.equal(timing.cancelled.length, 0);
+  timing.advance(3099); await settle(); assert.deepEqual(shown, [0]);
+  timing.advance(1); await settle(); assert.deepEqual(shown, [0, 1]);
+  assert.equal(timing.scheduled[1].delay, 900);
+  timing.advance(899); await settle(); assert.deepEqual(shown, [0, 1]);
+  timing.advance(1); assert.equal(await completion, true);
+  assert.deepEqual(shown, [0, 1, 2]);
+});
+
+test('a speed selected while loading controls the full next viewing interval', async () => {
+  const timing = clock(), loading = deferred(), speed = createPlaybackSpeed(), shown = [];
+  const playback = createPlayback({ prepare: index => index === 0 ? loading.promise : undefined,
+    present: index => shown.push(index), delayMs: () => speed.timing().dwellMs, ...timing });
+  const completion = playback.start([0, 1]);
+  speed.set(0.25); timing.advance(8000); await settle();
+  assert.equal(timing.pending, 0); assert.deepEqual(shown, []);
+  loading.resolve(); await settle(); assert.equal(timing.scheduled[0].delay, 7200);
+  timing.advance(7199); await settle(); assert.deepEqual(shown, [0]);
+  timing.advance(1); assert.equal(await completion, true); assert.deepEqual(shown, [0, 1]);
+});
 
 test('slow preparation cannot skip an observation or consume its viewing time', async () => {
   const first = deferred(), timing = clock(), prepared = [], shown = [];

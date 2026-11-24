@@ -23,6 +23,28 @@ test('only the reviewed annual source and footprint expose the three stories', (
   assert.deepEqual(eligiblePlaceStories(extended), []);
   assert.deepEqual(eligiblePlaceStories({...manifest, source:{doi:'other'}}), []);
 });
+test('public case text uses regional descriptions while original source links remain usable', () => {
+  assert.deepEqual(PLACE_STORIES.map(story => [story.id, story.location.label]), [
+    ['seoul-residential', '서울의 주거지'],
+    ['busan-development', '부산의 해안 개발지'],
+    ['jeju-tourism', '제주의 관광시설 주변'],
+  ]);
+  const definitions = JSON.parse(readFileSync(new URL('../pipeline/place_story_definitions.json', import.meta.url)));
+  const checkText = (value, key = '') => {
+    if (typeof value === 'string') {
+      if (/url$/i.test(key)) return;
+      assert.doesNotMatch(value, /둔촌|돈춘|오시리아|신화월드|신화테마파크|롯데월드|포레온|서머셋|dunchon|osiria|shinhwa/i);
+    } else if (value && typeof value === 'object') {
+      for (const [childKey, child] of Object.entries(value)) checkText(child, childKey);
+    }
+  };
+  checkText(definitions);
+  checkText(PLACE_STORIES);
+  for (const story of PLACE_STORIES) {
+    assert.equal(new URL(story.location.sourceUrl).protocol, 'https:');
+    assert.ok(story.observation.scopeLabel.startsWith(story.location.label));
+  }
+});
 test('cases carry real local means, fixed years, reproducible geometry and sources', () => {
   for (const story of PLACE_STORIES) {
     const summary = observationSummary(story);

@@ -316,7 +316,7 @@ export class ReliefViewer {
     if (generation !== this.surfaceGeneration || !this.active || this.contextLost) return false;
     // Different masks/triangulations are separate observations, never bridged
     // with invented surfaces across an unobserved area.
-    if (!compatibleSurface(this.frame, target, this.base)) return this.crossfadeSurface(target, year);
+    if (!compatibleSurface(this.frame, target, this.base)) return this.crossfadeSurface(target, year, { duration: duration * 700 / 1100 });
     const body = this.dynamic.children.find(item => item.isMesh && !item.isLineSegments2);
     if (!body) return true;
     const incoming = new THREE.Group(); this.buildSurface(incoming, this.base, target);
@@ -380,7 +380,7 @@ export class ReliefViewer {
     this.surfaceMotion = motion; motion.tick(performance.now()); this.markerLayer.hidden = true;
     return motion.promise;
   }
-  crossfadeSurface(target, year) {
+  crossfadeSurface(target, year, { duration = 700 } = {}) {
     // A changed footprint cannot be morphed. Blend the two exact observed
     // geometries instead of manufacturing triangles between their masks.
     const incoming = new THREE.Group(); this.buildSurface(incoming, this.base, target); this.scene.add(incoming);
@@ -395,7 +395,7 @@ export class ReliefViewer {
     }
     const oldLabel = this.canvas.getAttribute('aria-label');
     this.canvas.setAttribute('aria-label', `${this.year}년에서 ${year}년으로 두 실제 관측을 겹쳐 전환 중. 중간 장면은 별도 관측이 아닙니다.`);
-    const motion = createSurfaceTransition({ duration: 700, start: performance.now(),
+    const motion = createSurfaceTransition({ duration, start: performance.now(),
       apply: t => { for (const track of tracks) track.material.opacity = track.opacity * (track.entering ? t : 1 - t); this.dirty = true; },
       finish: complete => {
         for (const { material, opacity, transparent, depthWrite } of tracks) { Object.assign(material, { opacity, transparent, depthWrite }); material.needsUpdate = true; }

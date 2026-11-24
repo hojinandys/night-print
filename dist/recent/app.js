@@ -3,17 +3,22 @@ import { createGuide, guideScene } from './story.mjs?v=d5900e99b4e2';
 import { createImmersiveFocus } from './immersive-focus.mjs';
 import { createObservationCache } from './observation-cache.mjs';
 import { createPlayback } from './playback.mjs';
-import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary } from './place-stories.mjs?v=b8c735fbc3c7';
+import { createPlaybackSpeed, PLAYBACK_SPEED_KEY } from './playback-speed.mjs?v=7d9a364fda9d';
+import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary } from './place-stories.mjs?v=81658f766ab0';
 (() => {
   const $ = (id) => document.getElementById(id);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const playbackSpeed = createPlaybackSpeed({
+    read: () => window.localStorage.getItem(PLAYBACK_SPEED_KEY),
+    write: value => window.localStorage.setItem(PLAYBACK_SPEED_KEY, value),
+  });
   const state = { data: null, region: 'all', mode: 'absolute', yearIndex: 0, district: null, zoom: false, renderToken: 0, guide: null, guideTarget: null, compare: false, compareA: null, compareB: null, quality: false, threshold: '0.5', infoHidden: false, immersive: false, archiveId: null, history: null, historyLoading: false, interaction: null, placeStory: null };
   const interactionCache = createObservationCache();
   const immersiveFocus = createImmersiveFocus($('artwork'), $('cinema-toggle'));
   let loadingKey = '', loadingPromise = null, mapToken = 0, historyToken = 0, yearRequest = 0;
   let viewerModulePromise = null, webglUnavailable = false, rendererUnavailable = false;
   const imageCache = new Map();
-  const viewerModule = () => viewerModulePromise ||= import('./viewer3d.js?v=cc337abdce20');
+  const viewerModule = () => viewerModulePromise ||= import('./viewer3d.js?v=4688a72fd4e6');
   let viewerPromise = null, viewer = null, viewerKey = '', viewerReady = false, pendingFocus = null;
   let pendingPlaceFocus = null, pendingComparison = null, pendingYearPresentation = null;
   const finite = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -260,7 +265,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
         ? '기준 관측 · 같은 값을 뺀 차이는 0입니다'
         : '관측 사이를 부드럽게 연결 · 중간 움직임은 시각적 보간';
     },
-    delayMs: () => reducedMotion.matches ? 3200 : 1800,
+    delayMs: () => playbackSpeed.timing({ reducedMotion: reducedMotion.matches }).dwellMs,
     onState: syncPlayback,
     onError: () => { $('timeline-caption').textContent = '다음 관측을 불러오지 못해 멈췄습니다. 현재 장면은 유지합니다. 다시 재생해 주세요.'; },
   });
@@ -379,7 +384,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
       overlay.src = imagePath(r, state.data.years[index], state.mode);
       overlay.style.pointerEvents = 'none'; overlay.style.opacity = '0';
       image.parentElement.append(overlay); pending.overlays.push(overlay);
-      pending.animations.push(overlay.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 850, easing: 'cubic-bezier(.45,0,.55,1)', fill: 'forwards' }));
+      pending.animations.push(overlay.animate([{ opacity: 0 }, { opacity: 1 }], { duration: pending.timing.imageMs, easing: 'cubic-bezier(.45,0,.55,1)', fill: 'forwards' }));
     }
     try { await Promise.all(pending.animations.map(animation => animation.finished)); return true; }
     catch { return false; }
@@ -387,7 +392,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   async function presentYear(index, request) {
     if (request !== yearRequest || !state.data) return false;
     if (index === state.yearIndex) return true;
-    const pending = { data: state.data, region: state.region, mode: state.mode, animations: [], overlays: [] };
+    const pending = { data: state.data, region: state.region, mode: state.mode, animations: [], overlays: [], timing: playbackSpeed.timing({ reducedMotion: reducedMotion.matches }) };
     pendingYearPresentation = pending;
     const current = () => pendingYearPresentation === pending && request === yearRequest &&
       state.data === pending.data && state.region === pending.region && state.mode === pending.mode && !state.compare;
@@ -399,7 +404,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
       $('scene-year-note').textContent = '전환 중 · 중간 표면은 관측값이 아닙니다';
       $('timeline-caption').textContent = `${periodName(from)} → ${periodName(to)} · 시각적 연결 중 · 수치는 ${periodName(from)} 관측`;
       const complete = state.region !== 'all' && viewerReady && !webglUnavailable && !rendererUnavailable
-        ? await viewer.transitionTo(region(), to, state.mode)
+        ? await viewer.transitionTo(region(), to, state.mode, { duration: pending.timing.surfaceMs })
         : await fadeYearImages(index, pending);
       if (!complete) {
         if (current()) { cancelYearPresentation(); throw new Error('Observation transition interrupted'); }
@@ -996,6 +1001,11 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   window.addEventListener('online', () => { if (!document.hidden && state.region !== 'all' && !$('retry-map').hidden && !$('retry-map').disabled) retryMap(); });
   $('year-slider').addEventListener('input', (e) => { if (state.data) setYear(e.target.value); });
   $('play-years').addEventListener('click', playYears); $('retry-load').addEventListener('click', loadData);
+  $('playback-speed').value = String(playbackSpeed.rate);
+  $('playback-speed').addEventListener('change', event => {
+    event.target.value = String(playbackSpeed.set(event.target.value));
+    announce(`재생 속도 ${playbackSpeed.rate}배. 전환과 감상 시간이 함께 바뀝니다. 진행 중인 전환과 감상 시간은 마친 뒤 적용합니다.`);
+  });
   $('single-image').addEventListener('error', () => { $('single-image-error').hidden = viewerReady; });
   $('single-image').addEventListener('load', () => { $('single-image-error').hidden = true; });
   document.querySelectorAll('[data-dialog]').forEach((b) => b.addEventListener('click', () => { stopPlay(); $(b.dataset.dialog).showModal(); document.body.classList.add('dialog-open'); }));
