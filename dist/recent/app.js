@@ -1,10 +1,10 @@
 'use strict';
-import { createGuide, guideScene } from './story.mjs?v=d5900e99b4e2';
+import { createGuide, guideScene } from './story.mjs?v=526b8b596811';
 import { createImmersiveFocus } from './immersive-focus.mjs';
 import { createObservationCache } from './observation-cache.mjs';
 import { createPlayback } from './playback.mjs';
 import { createPlaybackSpeed, PLAYBACK_SPEED_KEY } from './playback-speed.mjs?v=7d9a364fda9d';
-import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary } from './place-stories.mjs?v=81658f766ab0';
+import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary } from './place-stories.mjs?v=8a5b4c065740';
 (() => {
   const $ = (id) => document.getElementById(id);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -231,7 +231,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
     if (svg) {
       const [x, y] = location.point, [west, south, east, north] = location.bounds;
       const size = Math.max(state.interaction.bounds[2] - state.interaction.bounds[0], state.interaction.bounds[3] - state.interaction.bounds[1]);
-      const group = svgNode('g', { class: 'map-place-story', 'aria-label': `${location.label}와 살펴보는 범위. 공식 사업 경계가 아닙니다.`, role: 'img' });
+      const group = svgNode('g', { class: 'map-place-story', 'aria-label': `${location.label} 위치와 관측 범위. 공식 사업 경계가 아닙니다.`, role: 'img' });
       group.append(svgNode('rect', { x: west, y: -north, width: east - west, height: north - south, class: 'map-place-bounds' }));
       group.append(svgNode('circle', { cx: x, cy: -y, r: size * .013, class: 'map-place-point' }));
       const title = svgNode('title'); title.textContent = `${location.label} · 사각형은 주변 관측 범위`; group.append(title); svg.append(group);
@@ -747,13 +747,28 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   function renderGuide() {
     $('guided-story').hidden = state.guide === null;
     $('start-guide').setAttribute('aria-expanded', String(state.guide !== null));
+    $('guide-place-stories').hidden = true;
     if (state.guide === null || !state.guideTarget) return;
     const r = state.data.regions.find((item) => item.id === state.guideTarget.region);
     const chapter = state.guideTarget.chapters[state.guide];
     $('guide-step-count').textContent = `0${state.guide+1} / 04 · ${r ? label(r) : '세 지역'}`;
     $('guide-step-title').textContent = chapter.title; $('guide-step-body').textContent = chapter.body;
+    $('guide-place-stories').hidden = state.guide !== 2 || chapter.action !== 'choose-place-story' ||
+      !eligiblePlaceStories(state.data).some((story) => state.region === 'all' || story.region === state.region);
     $('guide-prev').disabled = state.guide === 0; $('guide-next').textContent = state.guide === 3 ? '직접 살펴보기' : '다음 장면';
     document.querySelectorAll('.guide-progress span').forEach((node,index) => { node.classList.toggle('active',index === state.guide); node.classList.toggle('complete',index < state.guide); if(index === state.guide) node.setAttribute('aria-current','step'); else node.removeAttribute('aria-current'); });
+  }
+  function chooseGuidePlaceStories() {
+    if (state.guide !== 2 || state.guideTarget?.chapters[2]?.action !== 'choose-place-story') return;
+    const stories = eligiblePlaceStories(state.data).filter((story) => state.region === 'all' || story.region === state.region);
+    if (!stories.length) return;
+    // Focus a choice without selecting it or changing the current observation.
+    leaveGuide();
+    const choices = $('place-story-choices');
+    const target = state.region === 'all' ? choices : choices.querySelector(`[data-place-story="${stories[0].id}"]`);
+    $('place-stories').scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
+    (target || choices).focus({ preventScroll: true });
+    announce('장소 이야기를 직접 골라 보세요. 주변의 관측과 공식 기록을 함께 살펴볼 수 있습니다.');
   }
   function finishGuide() {
     leaveGuide();
@@ -873,7 +888,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
     $('year-ticks').setAttribute('aria-label', isMonthly ? '같은 달 관측 바로 선택' : '연도 바로 선택');
     document.querySelector('.place-main-value .unit').textContent = units();
     $('afterword-title').innerHTML = '내가 아는 도시는<br>어떻게 변했을까.';
-    $('afterword-main').textContent = '도시가 밝아졌다는 말만으로는 동네마다 생긴 변화를 알 수 없습니다. 그래서 빛을 평균값 하나로만 보여 주지 않고, 원래의 위치에 높이로 세웠습니다. 멀리서는 도시의 모양을, 가까이서는 그 안의 차이를 봅니다. 익숙한 곳을 찾아본 뒤 처음의 전체 모습으로 돌아와 보세요.';
+    $('afterword-main').textContent = '익숙한 길이 전보다 어둡게 느껴질 때, 실제로 무엇이 달라졌는지 궁금해집니다. 도시가 밝아졌다는 말만으로는 동네마다 생긴 변화를 알 수 없습니다. 그래서 빛을 평균값 하나로만 보여 주지 않고, 원래의 위치에 높이로 세웠습니다. 멀리서는 도시의 모양을, 가까이서는 그 안의 차이를 봅니다. 익숙한 곳을 찾아본 뒤 처음의 전체 모습으로 돌아와 보세요.';
     $('afterword-update').textContent = isMonthly ? '같은 달을 비교해도 날씨와 관측 품질의 영향은 남습니다. 이 표면만으로 변화의 원인이나 도시의 사정을 단정할 수는 없습니다.' : eligiblePlaceStories(state.data).length ? '빛이 줄었다는 사실만으로 그곳의 사정을 알 수는 없습니다. 장소의 변화에서는 주민 이주나 시설 개장 같은 공식 기록을 관측 옆에 놓았습니다. 같은 빛의 변화라도, 그곳에서 일어난 일에 따라 다르게 읽힐 수 있습니다.' : '빛이 줄었다는 사실만으로 그곳의 사정을 알 수는 없습니다. 이 작품은 도시를 한 숫자로 이해할 때 놓치는 곳을 보여 주려 합니다.';
     $('guide-height').textContent = `밝기 장면은 ${observation()}, 변화 장면은 같은 위치의 ${periodName(baseline())} 값을 뺀 차이입니다. 큰 값과 작은 값을 함께 보기 위해 비선형 높이를 사용합니다.`;
     $('guide-color').textContent = '변화 장면의 금빛은 증가, 푸른빛은 감소입니다. 등고선은 같은 표시 높이를 잇습니다. 선 한 줄이 하나의 관측 시점을 뜻하지 않습니다. 밝기 장면의 색과 그림자는 고정 조명입니다.';
@@ -973,6 +988,7 @@ import { eligiblePlaceStories, placeStoryScene, projectPlace, observationSummary
   $('guide-prev').addEventListener('click', () => setGuide(state.guide-1));
   $('guide-next').addEventListener('click', () => { if (state.guide === 3) finishGuide(); else setGuide(state.guide+1); });
   $('guide-exit').addEventListener('click', finishGuide);
+  $('guide-place-stories').addEventListener('click', chooseGuidePlaceStories);
   $('compare-toggle').addEventListener('click',toggleComparison);
   ['compare-a','compare-b'].forEach((id) => $(id).addEventListener('change', (event) => setComparison(id === 'compare-a' ? 'a' : 'b', event.target.value)));
   $('quality-toggle').addEventListener('click', () => {

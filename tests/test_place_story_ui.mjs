@@ -187,3 +187,38 @@ test('a future annual edition hides historical cases without preventing the view
   assert.equal(context.$('place-story-panel').hidden, true);
   assert.equal(context.$('linked-map').children.length, 0);
 });
+
+test('guide invitation focuses the choices without choosing a case or changing the view', () => {
+  for (const regionId of ['all', 'busan']) {
+    const context = harness();
+    Object.assign(context.state, { region: regionId, guide: 2, guideTarget: { chapters: [{}, {}, { action: 'choose-place-story' }] }, mode: 'change', yearIndex: 8, compare: false });
+    const before = JSON.stringify({ region: context.state.region, mode: context.state.mode, yearIndex: context.state.yearIndex, compare: context.state.compare, placeStory: context.state.placeStory });
+    let focused = null, scrolled = 0;
+    const choices = context.$('place-story-choices');
+    choices.focus = () => { focused = 'choices'; };
+    choices.querySelector = selector => ({ focus() { focused = selector; } });
+    context.$('place-stories').scrollIntoView = () => { scrolled++; };
+    context.leaveGuide = () => { context.state.guide = null; context.state.guideTarget = null; };
+    vm.runInContext(applicationFunction('chooseGuidePlaceStories'), context);
+    context.chooseGuidePlaceStories();
+    assert.equal(context.state.guide, null);
+    assert.equal(scrolled, 1);
+    assert.equal(focused, regionId === 'all' ? 'choices' : '[data-place-story="busan-development"]');
+    assert.equal(JSON.stringify({ region: context.state.region, mode: context.state.mode, yearIndex: context.state.yearIndex, compare: context.state.compare, placeStory: context.state.placeStory }), before);
+    assert.equal(context.stops, 0);
+  }
+});
+
+test('stale guide invitation cannot open annual stories on a different edition or step', () => {
+  for (const [manifest, step] of [[monthly, 2], [annual, 0]]) {
+    const context = harness(manifest);
+    Object.assign(context.state, { guide: step, guideTarget: { chapters: [{}, {}, { action: 'choose-place-story' }] } });
+    let navigated = false;
+    context.leaveGuide = () => { navigated = true; };
+    context.$('place-stories').scrollIntoView = () => { navigated = true; };
+    vm.runInContext(applicationFunction('chooseGuidePlaceStories'), context);
+    context.chooseGuidePlaceStories();
+    assert.equal(navigated, false);
+    assert.equal(context.state.guide, step);
+  }
+});

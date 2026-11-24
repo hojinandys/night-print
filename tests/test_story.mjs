@@ -132,3 +132,27 @@ test('unobserved baseline and incomplete observations fail without fabricated pr
   assert.throws(() => createGuide(missingBaseline, 'overall'), /baseline/);
   assert.throws(() => createGuide(fixture(entity('overall', 10, null)), 'overall'), /incomplete observations/);
 });
+
+test('curated annual guides connect distribution to a voluntary place story', () => {
+  for (const id of ['all', 'seoul', 'busan', 'jeju']) {
+    const guide = createGuide(annualSnapshot, id);
+    assert.equal(guide.chapters[2].action, 'choose-place-story');
+    assert.match(guide.chapters[2].body, /장소의 변화.*9년 흐름.*기록/);
+    assert.match(guide.chapters[2].body, /원인이 증명되는 것은 아닙니다/);
+    assert.ok(guide.chapters.filter(chapter => chapter.action).length === 1);
+    assert.equal(guideScene(guide, 2, annualSnapshot.years).region, id);
+    assert.equal(guideScene(guide, 2, annualSnapshot.years).compare, false);
+  }
+});
+
+test('a monthly or revised annual footprint never inherits the curated case invitation', () => {
+  assert.ok(createGuide(monthlySnapshot).chapters.every(chapter => !chapter.action));
+  const changed = structuredClone(annualSnapshot);
+  changed.experience.files.forEach(file => { file.sha256 = 'unreviewed-observation'; });
+  assert.ok(createGuide(changed).chapters.every(chapter => !chapter.action));
+  assert.doesNotMatch(serialized(createGuide(changed)), /이주·개장/);
+  const onlyBusan = structuredClone(annualSnapshot);
+  onlyBusan.experience.files = onlyBusan.experience.files.filter(file => file.region === 'busan');
+  assert.equal(createGuide(onlyBusan, 'busan').chapters[2].action, 'choose-place-story');
+  assert.ok(createGuide(onlyBusan, 'seoul').chapters.every(chapter => !chapter.action));
+});

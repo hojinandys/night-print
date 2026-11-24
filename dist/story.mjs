@@ -1,3 +1,5 @@
+import { eligiblePlaceStories } from './place-stories.mjs?v=8a5b4c065740';
+
 // Each edition tells its own observations. The viewer chooses the place.
 const finite = (value) => typeof value === 'number' && Number.isFinite(value);
 const number = (value, digits = 1, signed = false) =>
@@ -88,13 +90,20 @@ export function createGuide(manifest, regionId = 'all') {
     title: '지도에서 아는 곳 찾아보기',
     body: `${regionName}의 평균 차이는 ${number(overall.change, 2, true)} ${units}입니다. 지도에서 궁금한 구역을 고르면 해당 경계와 수치를 함께 볼 수 있습니다. 익숙한 곳은 이 표면에서 어떤 모양으로 나타나나요?`,
   };
+  const placeStories = eligiblePlaceStories(manifest).filter((story) => all || story.region === regionId);
+  const thirdChapter = all ? distributionChapter(stats, years, monthly, units) : regionalThird;
+  if (placeStories.length) {
+    thirdChapter.title = '한 장소의 시간과 기록을 함께 보기';
+    thirdChapter.body += ` ‘장소의 변화’에서 관심 있는 사례를 고르면, 그 주변의 ${years.length}년 흐름과 이주·개장 기록을 함께 볼 수 있습니다. 사건과 관측의 시기가 겹친다고 원인이 증명되는 것은 아닙니다.`;
+    thirdChapter.action = 'choose-place-story';
+  }
   const chapters = [
     { title: directions, body: firstBody },
     {
       title: monthly ? '같은 달의 밝기를 비교하면' : '밝아진 곳과 어두워진 곳',
       body: `${lastLabel} 값에서 같은 위치의 ${firstLabel} 값을 뺐습니다. 금빛은 증가, 푸른빛은 감소입니다. ${stats.map(areaDescription).join(' ')} 비율은 공통 관측 영역 기준입니다. 작은 음수도 포함하며 통계적 유의성을 뜻하지 않습니다.`,
     },
-    all ? distributionChapter(stats, years, monthly, units) : regionalThird,
+    thirdChapter,
     {
       title: '내가 아는 곳은 어떻게 변했을까',
       body: `다시 전체를 보면, ${regionName}의 변화를 어떤 말로 설명할 수 있을까요? 빛이 늘거나 줄었다는 기록만으로 그곳의 삶이나 변화의 원인까지 알 수는 없습니다. 궁금한 지역을 골라 더 살펴보세요.${monthly ? ' 같은 달 비교에도 날씨와 관측 품질의 영향은 남습니다.' : ''}`,

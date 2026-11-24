@@ -1,4 +1,4 @@
-import catalog from './place-story-data.mjs?v=130273a1e1e0';
+import catalog from './place-story-data.mjs?v=4a6bd9b1d5da';
 
 export const PLACE_STORIES = catalog.cases;
 export const PLACE_METHOD = catalog.method;
